@@ -1,10 +1,18 @@
 import * as React from "react";
 import Highcharts from "highcharts";
 import HighchartsBoost from "highcharts/modules/boost";
-import HighchartsReact from "highcharts-react-official";
+import HighchartsReactModule from "highcharts-react-official";
 import { IStockData, IValuesStockData } from "../types";
 
 const MAX_CHART_POINTS = 1000;
+
+// Vite 8/Rollup envuelve este paquete, por lo que el componente puede estar bajo HighchartsReact.
+const HighchartsReact =
+  (
+    HighchartsReactModule as unknown as {
+      HighchartsReact?: typeof HighchartsReactModule;
+    }
+  ).HighchartsReact ?? HighchartsReactModule;
 
 if (typeof HighchartsBoost === "function") {
   HighchartsBoost(Highcharts);
