@@ -1,606 +1,231 @@
-# Challenge: Mejora y Optimización de Aplicación de Mercado de Valores
+# Metafar Challenge
 
-## 📋 Contexto del Proyecto
+Aplicación React + TypeScript para visualizar acciones y consultar series de precios usando Twelve Data. El foco de esta entrega fue refactorizar el manejo de datos con TanStack Query, mejorar performance donde correspondía y dejar documentadas las decisiones importantes.
 
-Este proyecto es una aplicación React + TypeScript que permite visualizar y analizar datos del mercado de valores utilizando la API de [Twelve Data](https://twelvedata.com/docs#overview). La aplicación actualmente incluye:
+## Setup
 
-### Funcionalidades Actuales
+Instalar dependencias:
 
-- **Tabla de acciones**: Listado de acciones con búsqueda por nombre y símbolo, paginación
-- **Vista de detalle**: Página de detalle por acción con gráfico de precios
-- **Configuración de visualización**: Formulario para seleccionar intervalo temporal (5min, 15min, 1h, etc.) y rango de fechas
-- **Modo tiempo real e histórico**: Opción para ver datos en tiempo real o históricos
-
-### Stack Tecnológico Actual
-
-- **Frontend**: React 18 + TypeScript + Vite
-- **UI**: Material-UI (MUI)
-- **Gráficos**: Highcharts
-- **HTTP Client**: Axios
-- **Routing**: React Router v6
-
-### API Utilizada: Twelve Data
-
-La aplicación utiliza la API de Twelve Data que ofrece:
-
-- **Time Series**: Datos históricos y en tiempo real con múltiples intervalos
-- **Quote**: Precios actuales de acciones
-- **WebSocket**: Streaming de datos en tiempo real (disponible en planes Pro+)
-- **Symbol Search**: Búsqueda de instrumentos financieros
-- **Reference Data**: Metadatos de acciones, exchanges, etc.
-- **Technical Indicators**: Más de 100 indicadores técnicos
-- **Fundamentals**: Datos fundamentales de empresas
-
-**Documentación completa**: https://twelvedata.com/docs#overview
-
----
-
-## 🎯 Objetivo del Challenge
-
-Tu tarea es **refactorizar la arquitectura** de esta aplicación implementando **React Query (TanStack Query)** para la gestión de datos del servidor y aplicar **mejoras de rendimiento** significativas. El enfoque principal está en:
-
-1. **Arquitectura moderna** con React Query para gestión de estado del servidor
-2. **Optimización de rendimiento** con técnicas avanzadas de React
-3. **Mejora de la experiencia de usuario** con mejor manejo de estados de carga y errores
-
-**Tiempo estimado**: 8-12 horas (puede distribuirse en varios días)
-
----
-
-## 🚀 Desafíos Principales
-
-### 1. Refactorización Arquitectónica con React Query (4-5 horas)
-
-#### Situación Actual
-
-- Estado local en componentes sin gestión centralizada
-- Lógica de negocio mezclada con componentes
-- No hay caché de datos
-- Múltiples llamadas redundantes a la API
-- Manejo manual de estados de loading y error
-- No hay invalidación inteligente de caché
-
-#### Tareas Obligatorias
-
-- [ ] **Instalar y configurar React Query (TanStack Query)**
-  - Instalar `@tanstack/react-query` y `@tanstack/react-query-devtools`
-  - Configurar `QueryClient` con opciones apropiadas:
-    - `defaultOptions` para queries y mutations
-    - `staleTime` y `cacheTime` según el tipo de dato
-    - Configurar `retry` con exponential backoff
-    - Habilitar React Query DevTools en desarrollo
-
-- [ ] **Refactorizar capa de servicios/API**
-  - Crear una estructura clara de servicios (`src/services/` o `src/api/`)
-  - Abstraer todas las llamadas a Twelve Data en funciones de servicio
-  - Implementar tipos TypeScript completos para todas las respuestas de la API
-  - Crear tipos para los parámetros de cada endpoint
-  - Organizar servicios por dominio (stocks, quotes, search, etc.)
-
-- [ ] **Crear custom hooks con React Query**
-  - `useStockList()` - Para obtener lista de acciones
-  - `useStockQuote(symbol, interval, startDate, endDate)` - Para datos de time series
-  - `useStockData(symbol)` - Para información básica de una acción
-  - `useStockSearch(query)` - Para búsqueda de símbolos (con debouncing)
-  - Cada hook debe exponer: `data`, `isLoading`, `isError`, `error`, `refetch`
-
-- [ ] **Configurar estrategias de caché**
-  - **Datos estáticos** (lista de acciones): `staleTime: Infinity`, persistir en localStorage
-  - **Datos históricos**: `staleTime: 5 minutos` (no cambian)
-  - **Datos en tiempo real**: `staleTime: 0`, `refetchInterval` según intervalo seleccionado
-  - **Búsquedas**: `staleTime: 1 minuto`, caché corto
-
-- [ ] **Implementar prefetching inteligente**
-  - Prefetch datos de acciones al hacer hover sobre filas de la tabla
-  - Prefetch datos relacionados cuando se navega a una página de detalle
-  - Usar `queryClient.prefetchQuery()` estratégicamente
-
-- [ ] **Manejo de invalidación de caché**
-  - Invalidar caché cuando sea necesario
-  - Usar `queryClient.invalidateQueries()` apropiadamente
-  - Implementar invalidación optimista donde sea posible
-
-- [ ] **Request deduplication y cancelación**
-  - Aprovechar la deduplicación automática de React Query
-  - Implementar cancelación de queries cuando el componente se desmonta
-  - Cancelar queries anteriores cuando cambian los parámetros
-
-**Entregables**:
-
-- Código refactorizado con React Query implementado
-- Documento explicando:
-  - Estrategia de caché para cada tipo de dato
-  - Trade-offs de las decisiones tomadas
-
-#### Ejemplo de Estructura Esperada
-
+```bash
+yarn install
 ```
+
+Crear un `.env` local:
+
+```bash
+VITE_TWELVE_DATA_API_KEY=tu_api_key
+```
+
+El `.env` local está ignorado por Git. `.env.example` queda como referencia sin secretos.
+
+Scripts principales:
+
+```bash
+yarn dev
+yarn lint
+yarn test
+yarn test:coverage
+yarn build
+```
+
+## Stack actual
+
+- React 18 + TypeScript + Vite.
+- TanStack Query para manejo de data + cache.
+- Axios.
+- React Router.
+- Base UI + Tailwind.
+- Highcharts para gráficos.
+- Vitest + React Testing Library para tests.
+
+## Arquitectura
+
+Separé la capa de datos de los componentes conforme a la estructura solicitada:
+
+```text
 src/
-├── api/
-│   ├── client.ts          # Axios instance configurado
-│   ├── endpoints.ts       # Constantes de endpoints
-│   └── types.ts           # Tipos de la API
-├── services/
-│   ├── stockService.ts    # Funciones de servicio para stocks
-│   └── quoteService.ts    # Funciones de servicio para quotes
-├── hooks/
-│   ├── queries/
-│   │   ├── useStockList.ts
-│   │   ├── useStockQuote.ts
-│   │   ├── useStockData.ts
-│   │   └── useStockSearch.ts
-│   └── useDebounce.ts    # Hook existente
-├── components/
-│   └── ...
-└── App.tsx               # QueryClientProvider aquí
+  api/
+    client.ts
+    endpoints.ts
+    queryClient.ts
+    stocks.ts
+    quotes.ts
+    guards.ts
+    types.ts
+  hooks/
+    queries/
+      cacheConfig.ts
+      queryKeys.ts
+      useStockList.ts
+      useStockData.ts
+      useStockQuote.ts
+      useStockSearch.ts
+  components/
+    atomics/
+    ui/
+    Detail.tsx
+    StockChart.tsx
+    StockPreferenceForm.tsx
+    StockTable.tsx
 ```
 
----
-
-### 2. Optimización de Performance (3-4 horas)
-
-#### Situación Actual
-
-- Tabla renderiza todos los elementos sin virtualización (puede ser lenta con muchos datos)
-- No hay code splitting (todo se carga al inicio)
-- Re-renders innecesarios en componentes
-- Bundle size no optimizado
-- Gráfico puede ser lento con grandes datasets
-- No hay memoización de componentes costosos
-
-#### Tareas Obligatorias
-
-- [ ] **Virtualización de tabla**
-  - Implementar virtualización para `StockTable` usando `react-window` o `@tanstack/react-virtual`
-  - Mantener funcionalidad de paginación o adaptarla a scroll virtual
-  - Medir mejora de performance (FPS, tiempo de render inicial)
-
-- [ ] **Code splitting y lazy loading**
-  - Implementar lazy loading de rutas con `React.lazy()` y `Suspense`
-  - Separar `Detail` component (página de detalle) en un chunk separado
-  - Separar `StockChart` (Highcharts es pesado) en un chunk separado
-  - Implementar preloading de rutas al hacer hover sobre links
-
-- [ ] **Optimización de re-renders**
-  - Usar **React DevTools Profiler** para identificar componentes que se re-renderizan innecesariamente
-  - Implementar `React.memo` en componentes que reciben props que no cambian frecuentemente:
-    - `TableRow` - memoizar para evitar re-renders al cambiar filtros
-    - `StockChart` - memoizar para evitar re-renders cuando datos no cambian
-    - Componentes atómicos que no necesitan re-renderizarse
-  - Usar `useMemo` para cálculos costosos:
-    - Filtrado de stocks en `StockTable`
-    - Transformación de datos para el gráfico
-  - Usar `useCallback` para funciones pasadas como props:
-    - Handlers en `StockTable` y `StockPreferenceForm`
-  - **Documentar** cada optimización: por qué se hizo y qué problema resuelve
-
-- [ ] **Optimización del gráfico**
-  - Optimizar renderizado de Highcharts:
-    - Limitar cantidad de puntos mostrados (data sampling para datasets grandes)
-    - Implementar `dataGrouping` de Highcharts para datasets grandes
-    - Usar `boost` module de Highcharts si hay muchos puntos
-  - Implementar lazy loading del gráfico (solo cargar cuando se necesita)
-  - Considerar renderizado progresivo para datos históricos extensos
-
-- [ ] **Optimizaciones adicionales de React Query**
-  - Configurar `structuralSharing: true` en QueryClient (ya viene por defecto)
-  - Usar `keepPreviousData: true` para transiciones suaves entre queries
-  - Implementar `placeholderData` para mejor UX durante carga
-  - Optimizar `select` en queries para transformar datos solo cuando sea necesario
+## TanStack Query
 
-**Entregables**:
+Estrategia de cache:
 
-- Métricas de performance documentadas:
-  - Lighthouse scores (Performance, First Contentful Paint, Time to Interactive)
-  - React Profiler: tiempo de render, cantidad de re-renders
-  - Tiempo de carga inicial
-- Documentación de optimizaciones:
-  - Lista de optimizaciones implementadas
-  - Métricas de mejora (ej: "Bundle reducido de 2.5MB a 1.8MB")
-  - Justificación de cada optimización
+- Lista de acciones: `staleTime: Infinity` y `gcTime` de un día.
+- Metadata de una acción: `staleTime` de una hora y `gcTime` largo.
+- Serie histórica: `staleTime` de cinco minutos y query key parametrizada por símbolo, intervalo y fechas.
+- Tiempo real: `staleTime: 0` y `refetchInterval` dinámico según el intervalo elegido.
 
----
-
-### 3. Mejora de UX con React Query (1-2 horas)
+No usamos `localStorage`. El enunciado lo mencionaba para datos estáticos, pero en esta app la cache de React Query durante la sesión cubre el caso principal sin sumar serialización, invalidación manual ni una dependencia extra. Si el producto necesitara persistencia entre sesiones u offline, lo agregaría como una decisión específica.
 
-#### Situación Actual
-
-- Manejo básico de errores
-- Estados de loading poco informativos
-- No hay feedback visual para acciones del usuario
-- ErrorBoundary básico
+Prefetch, invalidación y cancelación:
 
-#### Tareas
+- Al hacer hover sostenido sobre una fila, se prefetchea la metadata de esa acción.
+- En el mismo gesto se pre-carga el chunk de detalle.
+- El botón de reintento invalida la query de lista de acciones.
+- Las query functions reciben el `AbortSignal` de React Query y lo pasan a Axios.
+- La deduplicación queda delegada a React Query.
 
-- [ ] **Aprovechar estados de React Query**
-  - Usar `isLoading`, `isFetching`, `isError`, `error` de React Query en componentes
-  - Mostrar estados de loading específicos por sección
-  - Implementar skeleton loaders donde sea apropiado
-  - Mostrar mensajes de error amigables usando `error` de React Query
+## Búsqueda remota
 
-- [ ] **Mejorar modo tiempo real**
-  - Implementar actualización automática usando `refetchInterval` de React Query
-  - Configurar `refetchInterval` dinámicamente según el intervalo seleccionado
-  - Indicador visual de que está en modo tiempo real
-  - Permitir pausar/reanudar actualizaciones
+El hook `useStockSearch` quedó comentado a propósito. La tabla filtra localmente sobre la lista NASDAQ ya cargada, así evitamos llamadas remotas extra para una búsqueda que hoy no aporta más valor al flujo principal.
 
-- [ ] **Mejorar ErrorBoundary**
-  - ErrorBoundary más robusto con opciones de recovery
-  - Integrar con React Query para mostrar errores de API
-  - Mensajes de error amigables para el usuario
+La función API `searchStocks` y el endpoint `symbol_search` quedan disponibles si más adelante se decide conectar una búsqueda remota real. Para esta entrega, no usamos ese hook.
 
-- [ ] **Feedback visual**
-  - Implementar una versión responsive en, como mínimo, una pantalla.
-  - Sistema de toasts/notificaciones para feedback al usuario (opcional pero valorado).
-  - Notificar errores de API, éxito de operaciones
-  - Mostrar cuando los datos están siendo actualizados en background
+## API, tipos y runtime safety
 
-**Entregables**:
+La API ahora entra por funciones tipadas:
 
-- UX mejorada con mejor feedback al usuario
-- Documentación de estrategia de manejo de errores
+- `getStockList`
+- `getStockData`
+- `searchStocks`
+- `getStockQuote`
 
----
+Las respuestas remotas se tratan como `unknown` antes de validarlas. Esto evita confiar ciegamente en generics de Axios para datos que vienen de afuera.
 
-### 4. TypeScript y Type Safety (1 hora)
+Agregué type guards livianos para:
 
-#### Situación Actual
+- Lista de acciones.
+- Búsqueda de símbolos.
+- Time series.
 
-- Tipos básicos definidos
-- Posibles `any` implícitos
-- No hay validación de tipos en runtime
+No agregué Zod, ya que los contratos usados son chicos y el valor de una dependencia nueva no compensaba el peso conceptual. Si la app crece o aparecen más endpoints, Zod pasaría a ser viable.
 
-#### Tareas
+TypeScript está en `strict` y no hay `any` explícitos. Los errores externos siguen entrando como `unknown` y se normalizan antes de mostrarlos al usuario.
 
-- [ ] **TypeScript estricto**
-  - Configurar TypeScript en modo estricto en `tsconfig.json`
-  - Eliminar todos los `any` implícitos
-  - Crear tipos compartidos y utility types
+## Performance
 
-- [ ] **Tipos para React Query**
-  - Crear tipos para query keys (usar `as const` y tipos inferidos)
-  - Tipos para funciones de query y mutation
-  - Tipos para parámetros de queries
+Optimizaciones aplicadas:
 
-- [ ] **Tipos para Twelve Data**
-  - Crear tipos completos para todas las respuestas de Twelve Data
-  - Tipos para diferentes endpoints (time_series, quote, symbol_search, etc.)
-  - Tipos para parámetros de cada endpoint
+- Virtualización con `@tanstack/react-virtual`.
+- Scroll incremental client-side en lotes de 100 acciones.
+- `React.lazy` para separar la ruta de detalle.
+- `React.lazy` para sacar Highcharts del bundle inicial.
+- `React.memo` en la fila virtual y el gráfico.
+- `useMemo` para filtrado, slice visible y opciones de Highcharts.
+- `useCallback` para el prefetch de filas.
+- Sampling simple del gráfico hasta 1000 puntos.
+- Highcharts Boost dentro del chunk lazy del gráfico como red de seguridad.
+- `keepPreviousData` en la query de precios para transiciones más suaves.
 
-- [ ] **Validación de datos (opcional pero valorado)**
-  - Implementar validación de respuestas de API usando Zod
-  - Type guards apropiados
-  - Manejar casos donde la API devuelve datos inesperados
+Trade-off de la tabla: la API devuelve la lista completa, así que no hay paginado real de servidor. El infinite scroll es client-side. No reduce la transferencia inicial, pero sí mantiene bajo el número de nodos montados y el costo de render cuando hay miles de acciones.
 
-**Entregables**:
+Trade-off del gráfico: preferí sampling simple antes que meter una estrategia más compleja de agrupamiento. Para este challenge alcanza porque evita renders pesados con series grandes sin convertir el gráfico en otro proyecto. Boost queda habilitado cuando la serie original supera el límite.
 
-- Código con type safety completo
-- Tipos bien documentados
+Métricas registradas:
 
----
+- Antes del split había un único JS principal de alrededor de 705 kB, gzip alrededor de 247 kB.
+- Build actual:
+  - `index`: 441.52 kB, gzip 147.10 kB.
+  - `Detail`: 12.83 kB, gzip 5.15 kB.
+  - `StockChart`: 319.44 kB, gzip 114.18 kB.
+- En la revisión post-virtualización, con miles de acciones filtradas, se observaron cientos de nodos DOM y no miles.
 
-### 5. Testing (Opcional pero Valorado - 2 horas)
+La evidencia incluida es build size, separación de chunks, revisión DOM post-virtualización y tests. Si se quisiera una entrega más ceremonial, el siguiente paso sería adjuntar capturas de Lighthouse y React Profiler.
 
-#### Situación Actual
+## UX y manejo de errores
 
-- No hay tests implementados
+La UX ahora usa estados de React Query:
 
-#### Tareas
+- Skeleton para carga inicial de la tabla.
+- Mensaje de actualización en background.
+- Error inline cerca del contexto donde falla.
+- Toasts para errores y acciones relevantes.
+- ErrorBoundary con `react-error-boundary` y `QueryErrorResetBoundary`.
+- Modo tiempo real con indicador y acción de pausar/reanudar.
+- Responsive básico en listado y formulario.
 
-- [ ] **Configurar testing**
-  - Configurar Vitest (recomendado para Vite) o Jest
-  - Configurar React Testing Library
-  - Configurar `@tanstack/react-query` para testing
+Los mensajes para usuario están centralizados y son genéricos. La app no muestra detalles del proveedor ni errores técnicos en UI. En desarrollo se loguea más información para debug.
 
-- [ ] **Tests de hooks de React Query**
-  - Tests para custom hooks de queries
-  - Mocking de servicios
-  - Tests de estados de loading, error, success
+También se unificaron controles con Base UI:
 
-- [ ] **Tests de componentes**
-  - Tests para componentes críticos usando React Query
-  - Tests de integración para flujos completos
-  - Mocking apropiado de React Query
+- Inputs de texto y fecha.
+- Radio buttons.
+- Select de intervalo.
+- Botones a través de un wrapper local sobre `@base-ui/react/button`.
+- Toasts.
 
-- [ ] **Cobertura**
-  - Alcanzar al menos 60% de cobertura en código crítico
-  - Documentar qué se testea y qué no (y por qué)
+## Testing
 
-**Entregables**:
-
-- Suite de tests funcional (si se implementa)
-- Reporte de cobertura
-
----
-
-### 6. Mejoras Adicionales (Opcional)
-
-#### Developer Experience
-
-- [ ] **ESLint/Prettier**: Configurar con reglas estrictas
-- [ ] **Husky + pre-commit hooks**: Validar código antes de commit
-- [ ] **CI/CD básico**: GitHub Actions o similar para tests y linting
-- [ ] **Storybook**: Documentar componentes (opcional)
-
----
-
-## 📦 Entregables Requeridos
-
-1. **Código refactorizado y funcional**
-   - React Query implementado en toda la aplicación
-   - Optimizaciones de performance aplicadas
-   - Código limpio y bien documentado
-   - Commits descriptivos y bien estructurados
-
-2. **README actualizado** con:
-   - Instrucciones de setup y ejecución
-   - Descripción de la nueva arquitectura con React Query
-   - Estructura de carpetas explicada
-   - Decisiones técnicas importantes
-   - Mejoras implementadas
-
-3. **Documento técnico** (opcional pero muy valorado) explicando:
-   - **React Query**:
-     - Por qué se eligió React Query
-     - Estrategia de caché para cada tipo de dato
-     - Configuración del QueryClient y justificación
-     - Trade-offs de las decisiones tomadas
-   - **Performance**:
-     - Métricas antes/después (bundle size, Lighthouse scores, etc.)
-     - Lista de optimizaciones implementadas
-     - Justificación de cada optimización
-   - **Arquitectura**:
-     - Estructura de servicios y hooks
-     - Decisiones de diseño
-     - Próximos pasos recomendados
-
-4. **Métricas de mejora** (obligatorio):
-   - Lighthouse Performance score antes/después
-   - React Profiler: tiempo de render y cantidad de re-renders
-   - Screenshots o reportes de las métricas
-
----
-
-## ✅ Criterios de Evaluación
-
-### Implementación de React Query (35%) ⭐ PRIORITARIO
-
-- ✅ React Query correctamente instalado y configurado
-- ✅ QueryClient configurado con opciones apropiadas (staleTime, cacheTime, retry, etc.)
-- ✅ Custom hooks creados para todas las queries principales
-- ✅ Estrategia de caché bien definida según tipo de dato
-- ✅ Prefetching implementado donde sea apropiado
-- ✅ Invalidación de caché implementada correctamente
-- ✅ Uso correcto de estados de React Query (isLoading, isError, etc.)
-- ✅ Request deduplication y cancelación funcionando
-- ✅ Código bien organizado (servicios, hooks, tipos)
-
-### Optimización de Performance (30%) ⭐ PRIORITARIO
-
-- ✅ Virtualización de tabla implementada
-- ✅ Code splitting y lazy loading de rutas
-- ✅ Re-renders optimizados (React.memo, useMemo, useCallback)
-- ✅ Bundle size optimizado (métricas documentadas)
-- ✅ Gráfico optimizado para grandes datasets
-- ✅ Métricas de mejora documentadas (antes/después)
-- ✅ Justificación de cada optimización
-
-### Arquitectura y Código (20%)
-
-- ✅ Separación clara de responsabilidades (servicios, hooks, componentes)
-- ✅ Código limpio, legible y bien documentado
-- ✅ TypeScript usado efectivamente (sin `any` innecesarios)
-- ✅ Tipos completos para API y React Query
-- ✅ Estructura de carpetas lógica y escalable
-
-### UX y Manejo de Estados (10%)
-
-- ✅ Estados de loading informativos usando React Query
-- ✅ Manejo de errores robusto y amigable
-- ✅ Modo tiempo real funcionando con refetchInterval
-- ✅ Feedback visual apropiado al usuario
-
-### Testing (5% - Opcional)
-
-- ✅ Tests implementados (si se incluyen)
-- ✅ Tests de hooks de React Query
-- ✅ Cobertura apropiada
-
----
-
-## 🛠️ Setup Inicial
-
-1. **Clonar el repositorio**
-
-   ```bash
-   git clone [repo-url]
-   cd metafar-challenge
-   ```
-
-2. **Instalar dependencias actuales**
-
-   ```bash
-   yarn install
-   # o
-   npm install
-   ```
-
-3. **Instalar React Query (TanStack Query)**
-
-   ```bash
-   yarn add @tanstack/react-query @tanstack/react-query-devtools
-   # o
-   npm install @tanstack/react-query @tanstack/react-query-devtools
-   ```
-
-4. **Instalar dependencias para optimizaciones (opcional pero recomendado)**
-
-   ```bash
-   # Para virtualización
-   yarn add react-window
-   # o
-   yarn add @tanstack/react-virtual
-
-   # Para análisis de bundle
-   yarn add -D vite-bundle-visualizer
-   # o
-   yarn add -D rollup-plugin-visualizer
-   ```
-
-5. **Configurar API Key de Twelve Data**
-   - El proyecto actualmente tiene una API key hardcodeada en `src/api/index.ts`
-   - **IMPORTANTE**: Moverla a variables de entorno (`.env`)
-   - Crear archivo `.env` con: `VITE_TWELVE_DATA_API_KEY=tu_api_key`
-   - Puedes obtener una API key gratuita en: https://twelvedata.com/
-
-6. **Ejecutar el proyecto**
-
-   ```bash
-   yarn dev
-   # o
-   npm run dev
-   ```
-
-7. **Familiarizarse con el código**
-   - Revisar estructura del proyecto actual
-   - Entender flujos actuales (StockTable, Detail, StockPreferenceForm)
-   - Identificar áreas de mejora
-   - Revisar cómo se hacen las llamadas a la API actualmente
-
----
-
-## 📚 Recursos Útiles
-
-### Documentación Twelve Data
-
-- **API Documentation**: https://twelvedata.com/docs#overview
-- **Time Series**: https://twelvedata.com/docs#time-series
-- **WebSocket**: https://twelvedata.com/docs#websocket
-- **Technical Indicators**: https://twelvedata.com/docs#technical-indicators
-- **Symbol Search**: https://twelvedata.com/docs#symbol-search
-
-### Herramientas Recomendadas
-
-- **React DevTools**: Para profiling y debugging
-- **Vite Bundle Analyzer**: Para analizar bundle size
-- **Lighthouse**: Para métricas de performance
-- **React Testing Library**: Para testing de componentes
-
-### Librerías Requeridas y Recomendadas
-
-- **@tanstack/react-query**: ⭐ **REQUERIDO** - Para gestión de estado del servidor y caché
-- **@tanstack/react-query-devtools**: ⭐ **REQUERIDO** - DevTools para debugging de React Query
-- **react-window** o **@tanstack/react-virtual**: Para virtualización de tabla
-- **vite-bundle-visualizer** o **rollup-plugin-visualizer**: Para analizar bundle size
-- **zod**: Opcional - Para validación de datos de API
-- **react-error-boundary**: Opcional - Para mejor manejo de errores
-
-### Documentación React Query (TanStack Query)
-
-- **Documentación oficial**: https://tanstack.com/query/latest
-- **Guía de inicio rápido**: https://tanstack.com/query/latest/docs/react/quick-start
-- **Mejores prácticas**: https://tanstack.com/query/latest/docs/react/guides/important-defaults
-- **Configuración de QueryClient**: https://tanstack.com/query/latest/docs/react/reference/QueryClient
-- **Custom hooks**: https://tanstack.com/query/latest/docs/react/guides/custom-hooks
-- **Prefetching**: https://tanstack.com/query/latest/docs/react/guides/prefetching
-
----
-
-## 💡 Tips y Recomendaciones
-
-1. **Comienza con React Query**
-   - Primero instala y configura React Query
-   - Crea la estructura de servicios y tipos
-   - Refactoriza un componente a la vez usando React Query
-   - Usa React Query DevTools para entender el comportamiento del caché
-
-2. **Estrategia de implementación recomendada**
-   - **Paso 1**: Configurar QueryClient y estructura base (1h)
-   - **Paso 2**: Refactorizar servicios y crear custom hooks (2h)
-   - **Paso 3**: Migrar componentes uno por uno (2h)
-   - **Paso 4**: Optimizaciones de performance (3h)
-   - **Paso 5**: Mejoras de UX y TypeScript (1h)
-
-3. **React Query - Mejores prácticas**
-   - Usa `queryKey` consistentes y tipados
-   - Configura `staleTime` según el tipo de dato (estáticos: Infinity, tiempo real: 0)
-   - Aprovecha `keepPreviousData` para transiciones suaves
-   - Usa `select` para transformar datos solo cuando sea necesario
-   - Implementa prefetching en interacciones del usuario (hover, etc.)
-
-4. **Performance - Medir antes de optimizar**
-   - Usa React DevTools Profiler para identificar problemas reales
-   - Mide bundle size antes y después
-   - No optimices prematuramente - optimiza donde hay problemas reales
-   - Documenta por qué cada optimización es necesaria
-
-5. **Trabaja incrementalmente**
-   - Haz commits frecuentes y descriptivos
-   - Implementa mejoras de forma incremental
-   - Prueba cada cambio antes de continuar
-   - Usa branches para features grandes
-
-6. **Documenta decisiones**
-   - Explica por qué elegiste React Query sobre otras soluciones
-   - Documenta la estrategia de caché
-   - Incluye comentarios donde el código no sea autoexplicativo
-   - Justifica cada optimización de performance
-
-7. **No busques perfección**
-   - Se valora más el pensamiento estratégico que la perfección
-   - Es mejor implementar bien React Query y algunas optimizaciones clave
-   - Documenta qué harías con más tiempo
-
----
-
-## 🎓 Nivel Esperado
-
-Este challenge está diseñado para evaluar a un **Senior Frontend Developer** que debería:
-
-- ✅ Tener experiencia sólida con React, TypeScript y ecosistema moderno
-- ✅ **Conocer React Query (TanStack Query)** o ser capaz de aprenderlo rápidamente
-- ✅ Entender arquitectura de aplicaciones frontend escalables
-- ✅ Conocer técnicas de optimización de performance en React
-- ✅ Ser capaz de tomar decisiones técnicas informadas
-- ✅ Priorizar mantenibilidad y escalabilidad
-- ✅ Escribir código limpio y bien documentado
-- ✅ Entender performance y optimización (bundle size, re-renders, code splitting)
-- ✅ Tener experiencia integrando APIs externas
-- ✅ Ser capaz de medir y documentar mejoras de performance
-
-**Nota**: No se espera perfección, sino demostración de:
-
-- Capacidad de implementar React Query correctamente
-- Pensamiento estratégico sobre arquitectura y performance
-- Conocimiento técnico sólido
-- Capacidad de tomar decisiones informadas considerando trade-offs
-
----
-
-## 📝 Notas Finales
-
-- **Tiempo**: Este challenge está diseñado para 8-12 horas, enfocado en React Query y optimizaciones de performance
-- **Prioridades**:
-  - ⭐ **CRÍTICO**: Implementar React Query correctamente
-  - ⭐ **CRÍTICO**: Optimizaciones de performance con métricas documentadas
-  - Importante: Mejoras de UX y TypeScript
-  - Opcional: Testing y features adicionales
-- **Preguntas**: Si tienes dudas sobre el challenge, React Query, o el proyecto, no dudes en preguntar
-- **Flexibilidad**: Siéntete libre de agregar mejoras adicionales que consideres valiosas
-- **Enfoque**: Se valora más la **implementación correcta de React Query** y **mejoras medibles de performance** que la cantidad de features
-
-### Recursos de Aprendizaje Rápido de React Query
-
-Si no tienes experiencia previa con React Query, estos recursos te ayudarán:
-
-- **Quick Start**: https://tanstack.com/query/latest/docs/react/quick-start (15 min)
-- **Tutorial interactivo**: https://tanstack.com/query/latest/docs/react/overview
-- **Ejemplos comunes**: https://tanstack.com/query/latest/docs/react/examples/react/basic
-
-### Entrega del Challenge: Clonado, Repositorio Público y Envío del Link
-
-- Antes de empezar con el challenge, por favor cloná el proyecto, trabajá sobre una copia en tu entorno local y luego subilo a un repositorio personal (GitHub o GitLab).
-- Dejalo configurado como público para que podamos revisarlo sin problemas.
-- Una vez que lo tengas terminado, envianos el link del repositorio por mail.
-
-¡Buena suerte! 🚀
+Se agregó:
+
+- Vitest + React Testing Library.
+- `jsdom`.
+- Helper de render con `QueryClient` aislado por test.
+- Coverage con provider `v8`.
+
+Suite actual:
+
+- `src/api/client.test.ts`: API key, parseo de respuestas y errores amigables.
+- `src/api/guards.test.ts`: contratos runtime de respuestas.
+- `src/hooks/queries/useStockQuote.test.tsx`: parámetros, query deshabilitada, cache histórica y refetch realtime.
+- `src/components/StockTable.test.tsx`: skeleton, error, retry, filtrado y prefetch por hover sostenido.
+- `src/components/StockPreferenceForm.test.tsx`: metadata, submit histórico, error y pausa de realtime.
+- `src/components/Detail.test.tsx`: render condicional del gráfico, pausa y skeleton inicial.
+
+Resultado actual:
+
+- `yarn lint`: pasa.
+- `yarn test`: 6 archivos, 25 tests, todos pasando.
+- `yarn build`: pasa.
+- `yarn test:coverage`: coverage focalizado de 83% statements, 86.18% branches, 84.48% functions y 82.78% lines.
+
+No agregué E2E ni tests internos de Highcharts. Preferí cubrir contratos de API, hooks críticos y flujos visibles.
+
+## Estado frente a entregables
+
+Cumplido:
+
+- Código refactorizado y funcional.
+- TanStack Query implementado en los flujos principales.
+- `QueryClient` con defaults, retries, `staleTime` y `gcTime`.
+- Capa API separada de componentes.
+- Hooks para lista, detalle de acción y quote.
+- Cache por tipo de dato.
+- Prefetch en hover sostenido e invalidación para reintento.
+- Cancelación con `AbortSignal`.
+- Uso de estados de React Query: loading, fetching, error y datos previos.
+- Tabla virtualizada.
+- Code splitting de detalle y gráfico.
+- Optimización del gráfico para datasets grandes.
+- UX mejorada con loading, errores, background fetching, toasts y ErrorBoundary.
+- TypeScript estricto, tipos de API y validación runtime liviana.
+- Tests y coverage sobre código crítico.
+- Commits incrementales y descriptivos.
+- README actualizado como documento de entrega.
+
+Decisiones intencionales:
+
+- No se usa `localStorage`.
+- No se usa `useStockSearch`; quedó comentado porque la búsqueda actual es local.
+- No hay invalidación optimista porque no hay escrituras.
+- No hay `src/services` porque `src/api` alcanzaba para lo solicitado.
+- No hay reporte formal versionado de Lighthouse o React Profiler.
+
+## Próximos pasos
+
+1. Adjuntar capturas o reportes de Lighthouse y React Profiler si se quiere cerrar la parte de métricas de forma más formal.
+2. Eliminar definitivamente `useStockSearch.ts` si más adelante confirmamos que nunca habrá búsqueda remota.
+3. Evaluar Zod solo si aparecen más endpoints o contratos más complejos.
