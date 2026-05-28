@@ -15,9 +15,9 @@ const IntervalSelect: React.FC<IntervalSelectProps> = ({
   ];
 
   return (
-    <div className={cn("mb-2.5", className)}>
+    <div className={cn("w-full sm:w-52", className)}>
       <SelectInput
-        label="Intervalo:"
+        label="Intervalo"
         value={value}
         onChange={onChange}
         options={options}

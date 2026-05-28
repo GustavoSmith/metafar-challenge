@@ -86,44 +86,57 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-5 flex flex-col border-b border-gray-300 p-2.5"
+      className="border-border bg-surface mb-5 rounded-3xl border p-4 shadow-sm sm:p-6"
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-        <div className="mb-2.5 text-2xl">
-          {symbol}
-          {isStockLoading && " - Cargando..."}
-          {detailStock && ` - ${detailStock.name} - ${detailStock.currency}`}
+      <div className="border-border mb-5 flex flex-col gap-3 border-b pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-accent text-xs font-semibold tracking-[0.18em] uppercase">
+            Detalle de acción
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+            {symbol}
+            {isStockLoading && " - Cargando..."}
+            {detailStock && ` - ${detailStock.name} - ${detailStock.currency}`}
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
+            Elegí si querés seguir el precio en tiempo real o consultar un rango
+            histórico.
+          </p>
         </div>
-        <div className="mt-2.5 text-right text-lg">Usuario: Juan</div>
+        <div className="bg-surface-muted text-muted-foreground self-start rounded-2xl px-4 py-2 text-sm font-medium">
+          Usuario: Juan
+        </div>
       </div>
       {isStockError && (
-        <p className="mb-3 text-sm text-red-600">{stockErrorMessage}</p>
+        <p className="bg-danger-muted text-danger mb-4 rounded-2xl px-4 py-3 text-sm">
+          {stockErrorMessage}
+        </p>
       )}
       {isQuoteFetching && !isQuoteLoading && (
-        <p className="mb-3 text-sm text-gray-500">
+        <p className="bg-accent-muted text-accent mb-4 rounded-2xl px-4 py-3 text-sm font-medium">
           Actualizando serie de precios...
         </p>
       )}
       {isQuoteError && (
-        <p className="mb-3 text-sm text-red-600">{quoteErrorMessage}</p>
+        <p className="bg-danger-muted text-danger mb-4 rounded-2xl px-4 py-3 text-sm">
+          {quoteErrorMessage}
+        </p>
       )}
-      <div className="flex flex-col">
+      <div className="space-y-5">
         <RadioGroup
           value={realTime ? "realtime" : "history"}
           onValueChange={handleDataOptionChange}
-          className="flex flex-col"
+          className="grid gap-3"
         >
-          <div className="mb-2.5 flex items-center">
+          <div className="border-border bg-background rounded-2xl border p-4">
             <RadioButton value="realtime" label="Tiempo Real" />
-            <span className="ml-1 text-xs text-gray-600">
-              (utiliza la fecha actual, al graficar esta opción, se debe
-              actualizar el gráfico en forma automática según el intervalo
-              seleccionado)
-            </span>
+            <p className="text-muted-foreground mt-2 text-sm leading-6">
+              Usa la fecha actual y refresca el gráfico según el intervalo.
+            </p>
           </div>
-          <div className="mb-2.5 flex items-center">
+          <div className="border-border bg-background rounded-2xl border p-4">
             <RadioButton value="history" label="Histórico" />
-            <div className="mx-1">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <DateInput
                 disabled={realTime}
                 value={startDate}
@@ -138,29 +151,32 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
           </div>
         </RadioGroup>
         {realTime && (
-          <div className="mb-3 flex flex-col gap-2 rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="bg-accent-muted text-accent flex flex-col gap-3 rounded-2xl p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span>
               {realtimeStatus}. El gráfico se refresca según el intervalo
               seleccionado.
             </span>
-            <button
+            <Button
+              variant="outlined"
               type="button"
               onClick={onToggleRealtimePaused}
-              className="self-start rounded border border-blue-300 px-3 py-1 font-medium hover:bg-blue-100 sm:self-auto"
+              className="border-accent/25 self-start sm:self-auto"
             >
               {isRealtimePaused ? "Reanudar" : "Pausar"}
-            </button>
+            </Button>
           </div>
         )}
-        <IntervalSelect value={interval} onChange={handleIntervalChange} />
-        <Button
-          variant="contained"
-          type="submit"
-          className="self-start"
-          disabled={isQuoteLoading}
-        >
-          {isQuoteLoading ? "Cargando..." : "Graficar"}
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <IntervalSelect value={interval} onChange={handleIntervalChange} />
+          <Button
+            variant="contained"
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={isQuoteLoading}
+          >
+            {isQuoteLoading ? "Cargando..." : "Graficar"}
+          </Button>
+        </div>
       </div>
     </form>
   );

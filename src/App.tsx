@@ -16,7 +16,13 @@ const App: React.FC = () => {
       <AppErrorBoundary>
         <AppToastProvider>
           <BrowserRouter>
-            <React.Suspense fallback={<div className="p-4">Cargando...</div>}>
+            <React.Suspense
+              fallback={
+                <div className="bg-background text-muted-foreground flex min-h-screen items-center justify-center p-6 text-sm">
+                  Cargando experiencia...
+                </div>
+              }
+            >
               <Routes>
                 <Route path="/" element={<StockTable />} />
                 <Route path="/stock/:symbol" element={<Detail />} />

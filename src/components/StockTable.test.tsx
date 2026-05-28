@@ -1,5 +1,5 @@
 import { MemoryRouter } from "react-router-dom";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useStockList } from "@/hooks/queries/useStockList";
 import { stockQueryKeys } from "@/hooks/queries/queryKeys";
@@ -106,5 +106,41 @@ describe("StockTable", () => {
       },
       { timeout: 1000 },
     );
+  });
+
+  it("prefetches row details only after a sustained hover", () => {
+    vi.useFakeTimers();
+
+    try {
+      const { queryClient } = renderStockTable();
+      const prefetchQuery = vi.spyOn(queryClient, "prefetchQuery");
+      const row = screen.getByText("Apple Inc.").parentElement;
+
+      expect(row).toBeTruthy();
+
+      fireEvent.mouseEnter(row!);
+      act(() => {
+        vi.advanceTimersByTime(250);
+      });
+      fireEvent.mouseLeave(row!);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+
+      expect(prefetchQuery).not.toHaveBeenCalled();
+
+      fireEvent.mouseEnter(row!);
+      act(() => {
+        vi.advanceTimersByTime(2500);
+      });
+
+      expect(prefetchQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: stockQueryKeys.data("AAPL"),
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

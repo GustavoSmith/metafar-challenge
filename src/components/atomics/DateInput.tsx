@@ -8,14 +8,16 @@ const DateInput: React.FC<IDateInputProps> = ({
   value,
   onChange,
   className,
+  label,
 }) => (
   <Input
     type="datetime-local"
+    aria-label={label}
     disabled={disabled}
     value={value}
     onChange={onChange}
     className={cn(
-      "my-2.5 rounded border border-gray-300 px-1.5 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50",
+      "border-border bg-surface text-foreground focus:border-accent focus:ring-accent/15 disabled:bg-surface-muted disabled:text-muted-foreground h-10 rounded-xl border px-3 text-sm shadow-sm focus:ring-2 focus:outline-none disabled:cursor-not-allowed",
       className,
     )}
   />

@@ -5,6 +5,7 @@ import {
   type FallbackProps,
 } from "react-error-boundary";
 import { userErrorMessages } from "@/lib/userMessages";
+import { Button } from "./components/atomics/index";
 
 interface AppErrorBoundaryProps {
   children: React.ReactNode;
@@ -22,13 +23,13 @@ function ErrorFallback({ resetErrorBoundary }: FallbackProps) {
         <h1 className="mb-2 text-2xl font-semibold">Algo salió mal</h1>
         <p className="text-sm text-gray-600">{message}</p>
       </div>
-      <button
+      <Button
+        variant="contained"
         type="button"
         onClick={resetErrorBoundary}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
       >
         Reintentar
-      </button>
+      </Button>
     </main>
   );
 }

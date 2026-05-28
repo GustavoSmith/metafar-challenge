@@ -5,6 +5,7 @@ import { useStockQuote } from "@/hooks/queries/useStockQuote";
 import { appToast } from "@/lib/toast";
 import { getUserFriendlyMessage } from "@/lib/userMessages";
 import type { StockPreferenceFormValues } from "../types";
+import { Button } from "./atomics/index";
 
 const Chart = React.lazy(() => import("./StockChart"));
 const DEFAULT_SYMBOL = "MELI";
@@ -80,39 +81,56 @@ const Detail: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto max-w-5xl p-4">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-4 inline-flex items-center gap-2 rounded border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-      >
-        <span aria-hidden="true">←</span>
-        Volver
-      </button>
-      <StockPreferenceForm
-        symbol={selectedSymbol}
-        isQuoteError={isQuoteError}
-        isQuoteFetching={isQuoteFetching}
-        isQuoteLoading={isQuoteLoading}
-        isRealtimePaused={isRealtimePaused}
-        onSubmit={handleSubmit}
-        onToggleRealtimePaused={handleToggleRealtimePaused}
-        quoteError={quoteError}
-      />
-      {isQuoteLoading && !stockData && (
-        <div className="rounded border p-6">
-          <div className="mb-4 h-6 w-40 animate-pulse rounded bg-gray-200" />
-          <div className="h-72 animate-pulse rounded bg-gray-100" />
-        </div>
-      )}
-      {stockData && (
-        <React.Suspense
-          fallback={<div className="py-8 text-center">Cargando gráfico...</div>}
+    <main className="bg-background text-foreground min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <Button
+          variant="outlined"
+          type="button"
+          onClick={() => navigate("/")}
+          className="mb-4 gap-2"
         >
-          <Chart stockData={stockData} />
-        </React.Suspense>
-      )}
-    </div>
+          <span aria-hidden="true">←</span>
+          Volver
+        </Button>
+        <StockPreferenceForm
+          symbol={selectedSymbol}
+          isQuoteError={isQuoteError}
+          isQuoteFetching={isQuoteFetching}
+          isQuoteLoading={isQuoteLoading}
+          isRealtimePaused={isRealtimePaused}
+          onSubmit={handleSubmit}
+          onToggleRealtimePaused={handleToggleRealtimePaused}
+          quoteError={quoteError}
+        />
+        {isQuoteLoading && !stockData && (
+          <section className="border-border bg-surface rounded-3xl border p-4 shadow-sm sm:p-6">
+            <div className="bg-muted mb-4 h-6 w-40 animate-pulse rounded" />
+            <div className="bg-surface-muted h-72 animate-pulse rounded-2xl" />
+          </section>
+        )}
+        {stockData && (
+          <section className="border-border bg-surface rounded-3xl border p-4 shadow-sm sm:p-6">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Evolución del precio</h2>
+                <p className="text-muted-foreground text-sm">
+                  Serie basada en el cierre de cada intervalo.
+                </p>
+              </div>
+            </div>
+            <React.Suspense
+              fallback={
+                <div className="text-muted-foreground py-8 text-center text-sm">
+                  Cargando gráfico...
+                </div>
+              }
+            >
+              <Chart stockData={stockData} />
+            </React.Suspense>
+          </section>
+        )}
+      </div>
+    </main>
   );
 };
 

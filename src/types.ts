@@ -24,6 +24,7 @@ export interface IDateInputProps {
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
+  label?: string;
 }
 
 export interface ISelectInputProps {
@@ -34,12 +35,8 @@ export interface ISelectInputProps {
   className?: string;
 }
 
-export interface IButtonProps {
-  type: "submit" | "button" | "reset";
+export interface IButtonProps extends React.ComponentPropsWithoutRef<"button"> {
   variant: "contained" | "outlined" | "text";
-  children: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
 }
 
 export interface IntervalSelectProps {

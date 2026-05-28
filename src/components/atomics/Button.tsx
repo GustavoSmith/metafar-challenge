@@ -4,26 +4,27 @@ import { cn } from "@/lib/utils";
 import { IButtonProps } from "../../types";
 
 const variantClasses: Record<IButtonProps["variant"], string> = {
-  contained: "bg-blue-600 text-white hover:bg-blue-700",
-  outlined: "border border-gray-300 bg-transparent hover:bg-gray-50",
-  text: "bg-transparent hover:bg-gray-100",
+  contained: "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90",
+  outlined:
+    "border border-border bg-surface text-foreground hover:bg-surface-muted",
+  text: "bg-transparent text-accent hover:bg-accent-muted",
 };
 
 const CustomButton: React.FC<IButtonProps> = ({
-  type,
+  type = "button",
   variant,
   children,
   className,
-  disabled,
+  ...props
 }) => (
   <BaseButton
     type={type}
-    disabled={disabled}
     className={cn(
-      "inline-flex cursor-pointer items-center justify-center rounded px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+      "focus-visible:outline-accent inline-flex h-10 cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
       variantClasses[variant],
       className,
     )}
+    {...props}
   >
     {children}
   </BaseButton>
