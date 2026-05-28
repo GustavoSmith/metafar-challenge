@@ -1,53 +1,45 @@
 import React from "react";
 import { RadioGroup } from "@base-ui/react/radio-group";
-import { getStockData, getStockQuote } from "../api";
 import {
   RadioButton,
   DateInput,
   IntervalSelect,
   Button,
 } from "./atomics/index";
-import { IStock, IStockPreferenceFormProps } from "../types";
+import { useStockData } from "@/hooks/queries/useStockData";
+import type { IStockPreferenceFormProps } from "../types";
 import { getCurrentDay } from "../helpers";
 
+const DEFAULT_INTERVAL = "5min";
+
 const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
-  handleSetStockData,
+  isQuoteError = false,
+  isQuoteFetching = false,
+  isQuoteLoading = false,
+  onSubmit,
+  quoteError,
   symbol,
 }) => {
-  const [interval, setInterval] = React.useState<string>("5min");
+  const [interval, setInterval] = React.useState<string>(DEFAULT_INTERVAL);
   const [startDate, setStartDate] = React.useState<string>("");
   const [endDate, setEndDate] = React.useState<string>("");
   const [realTime, setRealTime] = React.useState<boolean>(true);
-  const [detailStock, setDetailStock] = React.useState<IStock | null>(null);
 
-  React.useEffect(() => {
-    async function fetchDefaultData() {
-      try {
-        const data = await getStockQuote(symbol, interval, startDate, endDate);
-        handleSetStockData(data);
-      } catch (error) {
-        console.error("Error fetching default stock data:", error);
-      }
+  const {
+    data: detailStock,
+    error: stockError,
+    isError: isStockError,
+    isLoading: isStockLoading,
+  } = useStockData(symbol);
 
-      try {
-        const { data } = await getStockData(symbol);
-        setDetailStock(data[0]);
-      } catch (error) {
-        console.error("Error fetching stock:", error);
-      }
-    }
-
-    fetchDefaultData();
-  }, [symbol]);
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    try {
-      const data = await getStockQuote(symbol, interval, startDate, endDate);
-      handleSetStockData(data);
-    } catch (error) {
-      console.error("Error fetching stock data:", error);
-    }
+    onSubmit({
+      endDate,
+      interval,
+      realTime,
+      startDate,
+    });
   }
 
   function handleIntervalChange(value: string) {
@@ -71,6 +63,15 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     setRealTime(value === "realtime");
   }
 
+  const stockErrorMessage =
+    stockError instanceof Error
+      ? stockError.message
+      : "No pudimos cargar la información de la acción.";
+  const quoteErrorMessage =
+    quoteError instanceof Error
+      ? quoteError.message
+      : "No pudimos cargar la serie de precios.";
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -78,10 +79,23 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     >
       <div className="flex justify-between">
         <div className="mb-2.5 text-2xl">
-          {symbol} - {detailStock?.name} - {detailStock?.currency}
+          {symbol}
+          {isStockLoading && " - Cargando..."}
+          {detailStock && ` - ${detailStock.name} - ${detailStock.currency}`}
         </div>
         <div className="mt-2.5 text-right text-lg">Usuario: Juan</div>
       </div>
+      {isStockError && (
+        <p className="mb-3 text-sm text-red-600">{stockErrorMessage}</p>
+      )}
+      {isQuoteFetching && !isQuoteLoading && (
+        <p className="mb-3 text-sm text-gray-500">
+          Actualizando serie de precios...
+        </p>
+      )}
+      {isQuoteError && (
+        <p className="mb-3 text-sm text-red-600">{quoteErrorMessage}</p>
+      )}
       <div className="flex flex-col">
         <RadioGroup
           value={realTime ? "realtime" : "history"}
@@ -113,8 +127,13 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
           </div>
         </RadioGroup>
         <IntervalSelect value={interval} onChange={handleIntervalChange} />
-        <Button variant="contained" type="submit" className="self-start">
-          Graficar
+        <Button
+          variant="contained"
+          type="submit"
+          className="self-start"
+          disabled={isQuoteLoading}
+        >
+          {isQuoteLoading ? "Cargando..." : "Graficar"}
         </Button>
       </div>
     </form>

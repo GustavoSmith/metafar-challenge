@@ -735,7 +735,7 @@
   resolved "https://registry.yarnpkg.com/@tanstack/query-devtools/-/query-devtools-5.100.14.tgz#1555c8e1e4ea74db85dd2faaea2b7b50e135faf1"
   integrity sha512-g96SmSSQecYTYcyuAMRXr895GplJv01UGt7qttQWPOUyZ5EGz5tbRc589bMc2m5BsPFD6O0PCEAHdbDYNP6UBw==
 
-"@tanstack/react-query-devtools@5.100.14":
+"@tanstack/react-query-devtools@^5.100.14":
   version "5.100.14"
   resolved "https://registry.yarnpkg.com/@tanstack/react-query-devtools/-/react-query-devtools-5.100.14.tgz#0774021fdc0b417a86b67b196d5ffb9820cff10c"
   integrity sha512-JkP5VDgKOw3t/QSA1OABRHEqx8BuNs5MfvZRooNqdvN57SzTuGq3fKR1a2IH5rqa5HDLUm+FOXUEnB9ueHiLzg==

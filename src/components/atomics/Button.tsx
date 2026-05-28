@@ -14,9 +14,11 @@ const CustomButton: React.FC<IButtonProps> = ({
   variant,
   children,
   className,
+  disabled,
 }) => (
   <BaseButton
     type={type}
+    disabled={disabled}
     className={cn(
       "inline-flex cursor-pointer items-center justify-center rounded px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
       variantClasses[variant],

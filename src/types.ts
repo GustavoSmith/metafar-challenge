@@ -1,34 +1,14 @@
-export interface IMetaStockData {
-  symbol: string;
-  interval: string;
-  currency: string;
-  exchange_timezone: string;
-  mic_code: string;
-  exchange: string;
-  type: string;
-}
+import type { StockQuoteParams } from "./api/types";
 
-export interface IValuesStockData {
-  datetime: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
-  volume: string;
-}
+export type {
+  IMetaStockData,
+  IStock,
+  IStockData,
+  IValuesStockData,
+  StockQuoteParams,
+  StockSearchResult,
+} from "./api/types";
 
-export interface IStockData {
-  meta: IMetaStockData;
-  values: IValuesStockData[];
-  status: string;
-}
-
-export interface IStock {
-  symbol: string;
-  name: string;
-  currency: string;
-  type: string;
-}
 interface IOption {
   value: string;
   label: string;
@@ -59,6 +39,7 @@ export interface IButtonProps {
   variant: "contained" | "outlined" | "text";
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
 }
 
 export interface IntervalSelectProps {
@@ -67,7 +48,18 @@ export interface IntervalSelectProps {
   className?: string;
 }
 
+export interface StockPreferenceFormValues extends Omit<
+  StockQuoteParams,
+  "symbol"
+> {
+  realTime: boolean;
+}
+
 export interface IStockPreferenceFormProps {
   symbol: string;
-  handleSetStockData: React.Dispatch<React.SetStateAction<IStockData | null>>;
+  isQuoteError?: boolean;
+  isQuoteFetching?: boolean;
+  isQuoteLoading?: boolean;
+  onSubmit: (values: StockPreferenceFormValues) => void;
+  quoteError?: unknown;
 }

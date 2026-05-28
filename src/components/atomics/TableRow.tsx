@@ -5,10 +5,14 @@ import { IStock } from "../../types";
 
 interface IStockTableRowProps {
   stock: IStock;
+  onPrefetch?: () => void;
 }
 
-const StockTableRow: React.FC<IStockTableRowProps> = ({ stock }) => (
-  <TableRow>
+const StockTableRow: React.FC<IStockTableRowProps> = ({
+  stock,
+  onPrefetch,
+}) => (
+  <TableRow onMouseEnter={onPrefetch}>
     <TableCell>
       <Link
         to={`/stock/${stock.symbol}`}

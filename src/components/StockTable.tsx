@@ -1,9 +1,12 @@
 import * as React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { TextField, TableHeader, TableRow } from "./atomics/index";
 import { Table, TableBody } from "@/components/ui/table";
 import { ClipLoader } from "react-spinners";
-import { getStockListForAutocomplete } from "../api";
-import { IStock } from "../types";
+import { getStockData } from "@/api/stocks";
+import type { IStock } from "@/api/types";
+import { stockQueryKeys } from "@/hooks/queries/queryKeys";
+import { useStockList } from "@/hooks/queries/useStockList";
 import useDebounce from "../hooks/useDebounce";
 
 const ROWS_PER_PAGE_OPTIONS = [25, 50, 100] as const;
@@ -71,46 +74,56 @@ const TablePagination: React.FC<TablePaginationProps> = ({
 };
 
 const StockTable: React.FC = () => {
-  const [loading, setLoading] = React.useState<boolean>(false);
+  const queryClient = useQueryClient();
   const [searchName, setSearchName] = React.useState<string>("");
   const [searchSymbol, setSearchSymbol] = React.useState<string>("");
   const [page, setPage] = React.useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = React.useState<number>(25);
-  const [stocks, setStocks] = React.useState<IStock[]>([]);
-  const [filteredStocks, setFilteredStocks] = React.useState<IStock[]>([]);
+  const stockListQuery = useStockList();
+  const stocks: IStock[] = stockListQuery.data ?? [];
 
   const debouncedSearchName = useDebounce(searchName, 500);
   const debouncedSearchSymbol = useDebounce(searchSymbol, 500);
 
-  React.useEffect(() => {
-    fetchStockList();
-  }, []);
-
-  React.useEffect(() => {
-    filterStocks(debouncedSearchName, debouncedSearchSymbol);
+  const filteredStocks = React.useMemo(() => {
+    return stocks.filter((stock) => {
+      return (
+        stock.name.toLowerCase().includes(debouncedSearchName.toLowerCase()) &&
+        stock.symbol.toLowerCase().includes(debouncedSearchSymbol.toLowerCase())
+      );
+    });
   }, [debouncedSearchName, debouncedSearchSymbol, stocks]);
 
-  async function fetchStockList() {
-    setLoading(true);
-    try {
-      const stockList = await getStockListForAutocomplete();
-      setStocks(stockList.data);
-      setFilteredStocks(stockList.data);
-    } catch (error) {
-      console.error("Error fetching stock list:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredStocks.length / rowsPerPage),
+  );
+  const currentPage = Math.min(page, totalPages - 1);
+
+  const paginatedStocks = React.useMemo(
+    () =>
+      filteredStocks.slice(
+        currentPage * rowsPerPage,
+        currentPage * rowsPerPage + rowsPerPage,
+      ),
+    [currentPage, filteredStocks, rowsPerPage],
+  );
+
+  const errorMessage =
+    stockListQuery.error instanceof Error
+      ? stockListQuery.error.message
+      : "No pudimos cargar la lista de acciones.";
 
   function handleSearchNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearchName(event.target.value);
+    setPage(0);
   }
 
   function handleSearchSymbolChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
     setSearchSymbol(event.target.value);
+    setPage(0);
   }
 
   function handleChangePage(newPage: number) {
@@ -122,15 +135,18 @@ const StockTable: React.FC = () => {
     setPage(0);
   }
 
-  function filterStocks(name: string, symbol: string) {
-    const filtered = stocks.filter((stock) => {
-      return (
-        stock.name.toLowerCase().includes(name.toLowerCase()) &&
-        stock.symbol.toLowerCase().includes(symbol.toLowerCase())
-      );
+  function handlePrefetchStockData(symbol: string) {
+    void queryClient.prefetchQuery({
+      queryKey: stockQueryKeys.data(symbol),
+      queryFn: ({ signal }) => getStockData(symbol, signal),
+      staleTime: 60 * 60 * 1000,
     });
-    setFilteredStocks(filtered);
-    setPage(0);
+  }
+
+  function handleRefreshStockList() {
+    void queryClient.invalidateQueries({
+      queryKey: stockQueryKeys.list(),
+    });
   }
 
   return (
@@ -148,25 +164,47 @@ const StockTable: React.FC = () => {
         />
       </div>
       <div className="rounded-md border bg-white shadow-sm">
-        {loading ? (
+        {stockListQuery.isFetching && !stockListQuery.isLoading && (
+          <div className="border-b px-3 py-2 text-sm text-gray-500">
+            Actualizando datos en segundo plano...
+          </div>
+        )}
+        {stockListQuery.isLoading ? (
           <div className="flex justify-center py-12">
-            <ClipLoader color="#2563eb" loading={loading} size={50} />
+            <ClipLoader
+              color="#2563eb"
+              loading={stockListQuery.isLoading}
+              size={50}
+            />
+          </div>
+        ) : stockListQuery.isError ? (
+          <div className="p-6 text-center">
+            <p className="mb-3 text-sm text-red-600">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={handleRefreshStockList}
+              className="rounded bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
+            >
+              Reintentar
+            </button>
           </div>
         ) : (
           <Table>
             <TableHeader />
             <TableBody>
-              {filteredStocks
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((stock) => (
-                  <TableRow key={stock.symbol} stock={stock} />
-                ))}
+              {paginatedStocks.map((stock) => (
+                <TableRow
+                  key={stock.symbol}
+                  stock={stock}
+                  onPrefetch={() => handlePrefetchStockData(stock.symbol)}
+                />
+              ))}
             </TableBody>
           </Table>
         )}
         <TablePagination
           count={filteredStocks.length}
-          page={page}
+          page={currentPage}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
