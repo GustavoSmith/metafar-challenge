@@ -2,6 +2,8 @@
 
 Aplicación React + TypeScript para visualizar acciones y consultar series de precios usando Twelve Data. El foco de esta entrega fue refactorizar el manejo de datos con TanStack Query, mejorar performance donde correspondía y dejar documentadas las decisiones importantes.
 
+Disponible en [https://metafar-challenge-drab.vercel.app/](https://metafar-challenge-drab.vercel.app/).
+
 ## Setup
 
 Instalar dependencias:
