@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import StockTable from './components/StockTable';
-import Detail from './components/Detail';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import StockTable from "./components/StockTable";
+import Detail from "./components/Detail";
 
-const App:React.FC = () => {
+const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -11,6 +11,6 @@ const App:React.FC = () => {
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default App;

@@ -37,7 +37,7 @@ export const getStockQuote = async (
   symbol: string,
   interval = "5min",
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   try {
     let url = `${BASE_URL}/time_series?symbol=${symbol}&interval=${interval}&apikey=${API_KEY}`;

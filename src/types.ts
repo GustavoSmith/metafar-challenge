@@ -59,7 +59,7 @@ export interface IButtonProps {
   type: "submit" | "button" | "reset";
   variant: "contained" | "outlined" | "text";
   children: React.ReactNode;
-  style?: React.CSSProperties
+  style?: React.CSSProperties;
 }
 
 export interface IntervalSelectProps {

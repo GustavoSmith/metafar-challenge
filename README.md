@@ -5,12 +5,14 @@
 Este proyecto es una aplicación React + TypeScript que permite visualizar y analizar datos del mercado de valores utilizando la API de [Twelve Data](https://twelvedata.com/docs#overview). La aplicación actualmente incluye:
 
 ### Funcionalidades Actuales
+
 - **Tabla de acciones**: Listado de acciones con búsqueda por nombre y símbolo, paginación
 - **Vista de detalle**: Página de detalle por acción con gráfico de precios
 - **Configuración de visualización**: Formulario para seleccionar intervalo temporal (5min, 15min, 1h, etc.) y rango de fechas
 - **Modo tiempo real e histórico**: Opción para ver datos en tiempo real o históricos
 
 ### Stack Tecnológico Actual
+
 - **Frontend**: React 18 + TypeScript + Vite
 - **UI**: Material-UI (MUI)
 - **Gráficos**: Highcharts
@@ -20,6 +22,7 @@ Este proyecto es una aplicación React + TypeScript que permite visualizar y ana
 ### API Utilizada: Twelve Data
 
 La aplicación utiliza la API de Twelve Data que ofrece:
+
 - **Time Series**: Datos históricos y en tiempo real con múltiples intervalos
 - **Quote**: Precios actuales de acciones
 - **WebSocket**: Streaming de datos en tiempo real (disponible en planes Pro+)
@@ -49,6 +52,7 @@ Tu tarea es **refactorizar la arquitectura** de esta aplicación implementando *
 ### 1. Refactorización Arquitectónica con React Query (4-5 horas)
 
 #### Situación Actual
+
 - Estado local en componentes sin gestión centralizada
 - Lógica de negocio mezclada con componentes
 - No hay caché de datos
@@ -102,6 +106,7 @@ Tu tarea es **refactorizar la arquitectura** de esta aplicación implementando *
   - Cancelar queries anteriores cuando cambian los parámetros
 
 **Entregables**:
+
 - Código refactorizado con React Query implementado
 - Documento explicando:
   - Estrategia de caché para cada tipo de dato
@@ -135,6 +140,7 @@ src/
 ### 2. Optimización de Performance (3-4 horas)
 
 #### Situación Actual
+
 - Tabla renderiza todos los elementos sin virtualización (puede ser lenta con muchos datos)
 - No hay code splitting (todo se carga al inicio)
 - Re-renders innecesarios en componentes
@@ -183,6 +189,7 @@ src/
   - Optimizar `select` en queries para transformar datos solo cuando sea necesario
 
 **Entregables**:
+
 - Métricas de performance documentadas:
   - Lighthouse scores (Performance, First Contentful Paint, Time to Interactive)
   - React Profiler: tiempo de render, cantidad de re-renders
@@ -197,12 +204,14 @@ src/
 ### 3. Mejora de UX con React Query (1-2 horas)
 
 #### Situación Actual
+
 - Manejo básico de errores
 - Estados de loading poco informativos
 - No hay feedback visual para acciones del usuario
 - ErrorBoundary básico
 
 #### Tareas
+
 - [ ] **Aprovechar estados de React Query**
   - Usar `isLoading`, `isFetching`, `isError`, `error` de React Query en componentes
   - Mostrar estados de loading específicos por sección
@@ -227,6 +236,7 @@ src/
   - Mostrar cuando los datos están siendo actualizados en background
 
 **Entregables**:
+
 - UX mejorada con mejor feedback al usuario
 - Documentación de estrategia de manejo de errores
 
@@ -235,11 +245,13 @@ src/
 ### 4. TypeScript y Type Safety (1 hora)
 
 #### Situación Actual
+
 - Tipos básicos definidos
 - Posibles `any` implícitos
 - No hay validación de tipos en runtime
 
 #### Tareas
+
 - [ ] **TypeScript estricto**
   - Configurar TypeScript en modo estricto en `tsconfig.json`
   - Eliminar todos los `any` implícitos
@@ -261,6 +273,7 @@ src/
   - Manejar casos donde la API devuelve datos inesperados
 
 **Entregables**:
+
 - Código con type safety completo
 - Tipos bien documentados
 
@@ -269,9 +282,11 @@ src/
 ### 5. Testing (Opcional pero Valorado - 2 horas)
 
 #### Situación Actual
+
 - No hay tests implementados
 
 #### Tareas
+
 - [ ] **Configurar testing**
   - Configurar Vitest (recomendado para Vite) o Jest
   - Configurar React Testing Library
@@ -292,6 +307,7 @@ src/
   - Documentar qué se testea y qué no (y por qué)
 
 **Entregables**:
+
 - Suite de tests funcional (si se implementa)
 - Reporte de cobertura
 
@@ -300,6 +316,7 @@ src/
 ### 6. Mejoras Adicionales (Opcional)
 
 #### Developer Experience
+
 - [ ] **ESLint/Prettier**: Configurar con reglas estrictas
 - [ ] **Husky + pre-commit hooks**: Validar código antes de commit
 - [ ] **CI/CD básico**: GitHub Actions o similar para tests y linting
@@ -347,6 +364,7 @@ src/
 ## ✅ Criterios de Evaluación
 
 ### Implementación de React Query (35%) ⭐ PRIORITARIO
+
 - ✅ React Query correctamente instalado y configurado
 - ✅ QueryClient configurado con opciones apropiadas (staleTime, cacheTime, retry, etc.)
 - ✅ Custom hooks creados para todas las queries principales
@@ -358,6 +376,7 @@ src/
 - ✅ Código bien organizado (servicios, hooks, tipos)
 
 ### Optimización de Performance (30%) ⭐ PRIORITARIO
+
 - ✅ Virtualización de tabla implementada
 - ✅ Code splitting y lazy loading de rutas
 - ✅ Re-renders optimizados (React.memo, useMemo, useCallback)
@@ -367,6 +386,7 @@ src/
 - ✅ Justificación de cada optimización
 
 ### Arquitectura y Código (20%)
+
 - ✅ Separación clara de responsabilidades (servicios, hooks, componentes)
 - ✅ Código limpio, legible y bien documentado
 - ✅ TypeScript usado efectivamente (sin `any` innecesarios)
@@ -374,12 +394,14 @@ src/
 - ✅ Estructura de carpetas lógica y escalable
 
 ### UX y Manejo de Estados (10%)
+
 - ✅ Estados de loading informativos usando React Query
 - ✅ Manejo de errores robusto y amigable
 - ✅ Modo tiempo real funcionando con refetchInterval
 - ✅ Feedback visual apropiado al usuario
 
 ### Testing (5% - Opcional)
+
 - ✅ Tests implementados (si se incluyen)
 - ✅ Tests de hooks de React Query
 - ✅ Cobertura apropiada
@@ -389,12 +411,14 @@ src/
 ## 🛠️ Setup Inicial
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone [repo-url]
    cd metafar-challenge
    ```
 
 2. **Instalar dependencias actuales**
+
    ```bash
    yarn install
    # o
@@ -402,6 +426,7 @@ src/
    ```
 
 3. **Instalar React Query (TanStack Query)**
+
    ```bash
    yarn add @tanstack/react-query @tanstack/react-query-devtools
    # o
@@ -409,12 +434,13 @@ src/
    ```
 
 4. **Instalar dependencias para optimizaciones (opcional pero recomendado)**
+
    ```bash
    # Para virtualización
    yarn add react-window
    # o
    yarn add @tanstack/react-virtual
-   
+
    # Para análisis de bundle
    yarn add -D vite-bundle-visualizer
    # o
@@ -428,6 +454,7 @@ src/
    - Puedes obtener una API key gratuita en: https://twelvedata.com/
 
 6. **Ejecutar el proyecto**
+
    ```bash
    yarn dev
    # o
@@ -445,6 +472,7 @@ src/
 ## 📚 Recursos Útiles
 
 ### Documentación Twelve Data
+
 - **API Documentation**: https://twelvedata.com/docs#overview
 - **Time Series**: https://twelvedata.com/docs#time-series
 - **WebSocket**: https://twelvedata.com/docs#websocket
@@ -452,12 +480,14 @@ src/
 - **Symbol Search**: https://twelvedata.com/docs#symbol-search
 
 ### Herramientas Recomendadas
+
 - **React DevTools**: Para profiling y debugging
 - **Vite Bundle Analyzer**: Para analizar bundle size
 - **Lighthouse**: Para métricas de performance
 - **React Testing Library**: Para testing de componentes
 
 ### Librerías Requeridas y Recomendadas
+
 - **@tanstack/react-query**: ⭐ **REQUERIDO** - Para gestión de estado del servidor y caché
 - **@tanstack/react-query-devtools**: ⭐ **REQUERIDO** - DevTools para debugging de React Query
 - **react-window** o **@tanstack/react-virtual**: Para virtualización de tabla
@@ -466,6 +496,7 @@ src/
 - **react-error-boundary**: Opcional - Para mejor manejo de errores
 
 ### Documentación React Query (TanStack Query)
+
 - **Documentación oficial**: https://tanstack.com/query/latest
 - **Guía de inicio rápido**: https://tanstack.com/query/latest/docs/react/quick-start
 - **Mejores prácticas**: https://tanstack.com/query/latest/docs/react/guides/important-defaults
@@ -538,6 +569,7 @@ Este challenge está diseñado para evaluar a un **Senior Frontend Developer** q
 - ✅ Ser capaz de medir y documentar mejoras de performance
 
 **Nota**: No se espera perfección, sino demostración de:
+
 - Capacidad de implementar React Query correctamente
 - Pensamiento estratégico sobre arquitectura y performance
 - Conocimiento técnico sólido
@@ -548,7 +580,7 @@ Este challenge está diseñado para evaluar a un **Senior Frontend Developer** q
 ## 📝 Notas Finales
 
 - **Tiempo**: Este challenge está diseñado para 8-12 horas, enfocado en React Query y optimizaciones de performance
-- **Prioridades**: 
+- **Prioridades**:
   - ⭐ **CRÍTICO**: Implementar React Query correctamente
   - ⭐ **CRÍTICO**: Optimizaciones de performance con métricas documentadas
   - Importante: Mejoras de UX y TypeScript
@@ -560,15 +592,15 @@ Este challenge está diseñado para evaluar a un **Senior Frontend Developer** q
 ### Recursos de Aprendizaje Rápido de React Query
 
 Si no tienes experiencia previa con React Query, estos recursos te ayudarán:
+
 - **Quick Start**: https://tanstack.com/query/latest/docs/react/quick-start (15 min)
 - **Tutorial interactivo**: https://tanstack.com/query/latest/docs/react/overview
 - **Ejemplos comunes**: https://tanstack.com/query/latest/docs/react/examples/react/basic
 
 ### Entrega del Challenge: Clonado, Repositorio Público y Envío del Link
 
-  - Antes de empezar con el challenge, por favor cloná el proyecto, trabajá sobre una copia en tu entorno local y luego subilo a un repositorio           personal (GitHub o GitLab).
-  - Dejalo configurado como público para que podamos revisarlo sin problemas.
-  - Una vez que lo tengas terminado, envianos el link del repositorio por mail.
+- Antes de empezar con el challenge, por favor cloná el proyecto, trabajá sobre una copia en tu entorno local y luego subilo a un repositorio personal (GitHub o GitLab).
+- Dejalo configurado como público para que podamos revisarlo sin problemas.
+- Una vez que lo tengas terminado, envianos el link del repositorio por mail.
 
 ¡Buena suerte! 🚀
-

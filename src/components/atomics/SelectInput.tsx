@@ -17,8 +17,8 @@ const SelectInput: React.FC<ISelectInputProps> = ({
 
 const styles = {
   select: {
-    width: '12rem',
-    height: '2rem',
+    width: "12rem",
+    height: "2rem",
   },
 };
 

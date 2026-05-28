@@ -50,12 +50,12 @@ const StockTable: React.FC = () => {
   }
 
   function handleSearchSymbolChange(
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) {
     setSearchSymbol(event.target.value);
   }
 
-  function handleChangePage(_: unknown , newPage: number) {
+  function handleChangePage(_: unknown, newPage: number) {
     setPage(newPage);
   }
 

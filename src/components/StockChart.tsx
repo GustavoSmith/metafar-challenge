@@ -14,7 +14,9 @@ const ChartScreen: React.FC<IChartProps> = ({ stockData }) => {
       text: symbol,
     },
     xAxis: {
-      categories: stockData.values.map((item: IValuesStockData) => item.datetime),
+      categories: stockData.values.map(
+        (item: IValuesStockData) => item.datetime,
+      ),
       title: {
         text: "Interval",
       },
@@ -27,12 +29,14 @@ const ChartScreen: React.FC<IChartProps> = ({ stockData }) => {
     series: [
       {
         name: "Interval",
-        data: stockData.values.map((item: IValuesStockData) => parseFloat(item.close)),
+        data: stockData.values.map((item: IValuesStockData) =>
+          parseFloat(item.close),
+        ),
       },
     ],
   };
 
-  return <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+  return <HighchartsReact highcharts={Highcharts} options={chartOptions} />;
 };
 
 export default ChartScreen;
