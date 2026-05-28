@@ -60,6 +60,8 @@ export interface IStockPreferenceFormProps {
   isQuoteError?: boolean;
   isQuoteFetching?: boolean;
   isQuoteLoading?: boolean;
+  isRealtimePaused: boolean;
+  onToggleRealtimePaused: () => void;
   onSubmit: (values: StockPreferenceFormValues) => void;
   quoteError?: unknown;
 }

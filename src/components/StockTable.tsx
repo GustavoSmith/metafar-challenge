@@ -9,6 +9,7 @@ import type { IStock } from "@/api/types";
 import { stockQueryKeys } from "@/hooks/queries/queryKeys";
 import { useStockList } from "@/hooks/queries/useStockList";
 import useDebounce from "../hooks/useDebounce";
+import { appToast } from "@/lib/toast";
 
 const INITIAL_VISIBLE_ROWS = 100;
 const LOAD_MORE_ROWS = 100;
@@ -40,6 +41,24 @@ const VirtualStockRow = React.memo(function VirtualStockRow({
     </div>
   );
 });
+
+function StockTableSkeleton() {
+  return (
+    <div className="space-y-2 p-4" aria-label="Cargando acciones">
+      {Array.from({ length: 8 }).map((_, index) => (
+        <div
+          key={index}
+          className="grid min-w-[720px] grid-cols-[120px_minmax(280px,1fr)_120px_160px] gap-4"
+        >
+          <div className="h-5 animate-pulse rounded bg-gray-200" />
+          <div className="h-5 animate-pulse rounded bg-gray-200" />
+          <div className="h-5 animate-pulse rounded bg-gray-200" />
+          <div className="h-5 animate-pulse rounded bg-gray-200" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const StockTable: React.FC = () => {
   const queryClient = useQueryClient();
@@ -83,6 +102,16 @@ const StockTable: React.FC = () => {
       ? stockListQuery.error.message
       : "No pudimos cargar la lista de acciones.";
 
+  React.useEffect(() => {
+    if (stockListQuery.isError) {
+      appToast.error({
+        id: "stock-list-error",
+        title: "No pudimos cargar las acciones",
+        description: errorMessage,
+      });
+    }
+  }, [errorMessage, stockListQuery.isError]);
+
   function handleSearchNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearchName(event.target.value);
     resetVisibleRows();
@@ -105,6 +134,11 @@ const StockTable: React.FC = () => {
   }, [queryClient]);
 
   function handleRefreshStockList() {
+    appToast.info({
+      id: "stock-list-retry",
+      title: "Reintentando carga",
+      description: "Volvemos a consultar la lista de acciones.",
+    });
     void queryClient.invalidateQueries({
       queryKey: stockQueryKeys.list(),
     });
@@ -128,7 +162,14 @@ const StockTable: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-5xl p-4">
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4">
+        <h1 className="mb-1 text-2xl font-semibold">Acciones</h1>
+        <p className="text-sm text-gray-600">
+          Buscá por nombre o símbolo. La lista carga más resultados al
+          desplazarte.
+        </p>
+      </div>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <TextField
           label="Buscar por nombre"
           value={searchName}
@@ -147,12 +188,15 @@ const StockTable: React.FC = () => {
           </div>
         )}
         {stockListQuery.isLoading ? (
-          <div className="flex justify-center py-12">
-            <ClipLoader
-              color="#2563eb"
-              loading={stockListQuery.isLoading}
-              size={50}
-            />
+          <div className="overflow-x-auto">
+            <StockTableSkeleton />
+            <div className="flex justify-center py-4">
+              <ClipLoader
+                color="#2563eb"
+                loading={stockListQuery.isLoading}
+                size={50}
+              />
+            </div>
           </div>
         ) : stockListQuery.isError ? (
           <div className="p-6 text-center">

@@ -9,6 +9,7 @@ import {
 import { useStockData } from "@/hooks/queries/useStockData";
 import type { IStockPreferenceFormProps } from "../types";
 import { getCurrentDay } from "../helpers";
+import { appToast } from "@/lib/toast";
 
 const DEFAULT_INTERVAL = "5min";
 
@@ -16,6 +17,8 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
   isQuoteError = false,
   isQuoteFetching = false,
   isQuoteLoading = false,
+  isRealtimePaused,
+  onToggleRealtimePaused,
   onSubmit,
   quoteError,
   symbol,
@@ -71,13 +74,26 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     quoteError instanceof Error
       ? quoteError.message
       : "No pudimos cargar la serie de precios.";
+  const realtimeStatus = isRealtimePaused
+    ? "Tiempo real pausado"
+    : "Tiempo real activo";
+
+  React.useEffect(() => {
+    if (isStockError) {
+      appToast.error({
+        id: `stock-data-error-${symbol}`,
+        title: "No pudimos cargar la acción",
+        description: stockErrorMessage,
+      });
+    }
+  }, [isStockError, stockErrorMessage, symbol]);
 
   return (
     <form
       onSubmit={handleSubmit}
       className="mb-5 flex flex-col border-b border-gray-300 p-2.5"
     >
-      <div className="flex justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
         <div className="mb-2.5 text-2xl">
           {symbol}
           {isStockLoading && " - Cargando..."}
@@ -126,6 +142,21 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
             </div>
           </div>
         </RadioGroup>
+        {realTime && (
+          <div className="mb-3 flex flex-col gap-2 rounded border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {realtimeStatus}. El gráfico se refresca según el intervalo
+              seleccionado.
+            </span>
+            <button
+              type="button"
+              onClick={onToggleRealtimePaused}
+              className="self-start rounded border border-blue-300 px-3 py-1 font-medium hover:bg-blue-100 sm:self-auto"
+            >
+              {isRealtimePaused ? "Reanudar" : "Pausar"}
+            </button>
+          </div>
+        )}
         <IntervalSelect value={interval} onChange={handleIntervalChange} />
         <Button
           variant="contained"
