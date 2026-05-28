@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@base-ui/react": "1.5.0",
@@ -29,21 +31,26 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.0",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.2",
     "@types/node": "20.12.12",
-    "@types/react": "18.2.66",
-    "@types/react-dom": "18.2.22",
+    "@types/react": "19.2.15",
+    "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "7.2.0",
     "@typescript-eslint/parser": "7.2.0",
     "@vitejs/plugin-react": "6.0.2",
+    "@vitest/coverage-v8": "4.1.7",
     "eslint": "8.57.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.6",
+    "jsdom": "29.1.1",
     "prettier": "3.8.3",
     "prettier-plugin-tailwindcss": "0.8.0",
     "tailwindcss": "4.3.0",
     "typescript": "5.2.2",
     "vite": "8.0.14",
-    "vite-bundle-visualizer": "1.2.1"
+    "vite-bundle-visualizer": "1.2.1",
+    "vitest": "4.1.7"
   }
 }

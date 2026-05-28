@@ -1,6 +1,7 @@
 node_modules
 .cursor
 dist
+coverage
 .env
 .env.local
 .env.*.local
