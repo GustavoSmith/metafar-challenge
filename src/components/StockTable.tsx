@@ -1,7 +1,8 @@
 import * as React from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useQueryClient } from "@tanstack/react-query";
-import { TextField, TableHeader, TableRow } from "./atomics/index";
-import { Table, TableBody } from "@/components/ui/table";
+import { Link } from "react-router-dom";
+import { TextField } from "./atomics/index";
 import { ClipLoader } from "react-spinners";
 import { getStockData } from "@/api/stocks";
 import type { IStock } from "@/api/types";
@@ -9,76 +10,44 @@ import { stockQueryKeys } from "@/hooks/queries/queryKeys";
 import { useStockList } from "@/hooks/queries/useStockList";
 import useDebounce from "../hooks/useDebounce";
 
-const ROWS_PER_PAGE_OPTIONS = [25, 50, 100] as const;
+const INITIAL_VISIBLE_ROWS = 100;
+const LOAD_MORE_ROWS = 100;
+const ROW_HEIGHT = 48;
 
-interface TablePaginationProps {
-  count: number;
-  page: number;
-  rowsPerPage: number;
-  onPageChange: (newPage: number) => void;
-  onRowsPerPageChange: (rowsPerPage: number) => void;
+interface VirtualStockRowProps {
+  stock: IStock;
+  onPrefetch: (symbol: string) => void;
 }
 
-const TablePagination: React.FC<TablePaginationProps> = ({
-  count,
-  page,
-  rowsPerPage,
-  onPageChange,
-  onRowsPerPageChange,
-}) => {
-  const totalPages = Math.max(1, Math.ceil(count / rowsPerPage));
-  const from = count === 0 ? 0 : page * rowsPerPage + 1;
-  const to = Math.min((page + 1) * rowsPerPage, count);
-
+const VirtualStockRow = React.memo(function VirtualStockRow({
+  stock,
+  onPrefetch,
+}: VirtualStockRowProps) {
   return (
-    <div className="text-muted-foreground flex flex-wrap items-center justify-end gap-4 border-t px-2 py-3 text-sm">
-      <div className="flex items-center gap-2">
-        <span>Filas por página:</span>
-        <select
-          value={rowsPerPage}
-          onChange={(event) =>
-            onRowsPerPageChange(parseInt(event.target.value, 10))
-          }
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
-        >
-          {ROWS_PER_PAGE_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-      <span>
-        {from}-{to} de {count}
-      </span>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          disabled={page === 0}
-          onClick={() => onPageChange(page - 1)}
-          className="rounded border border-gray-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Anterior
-        </button>
-        <button
-          type="button"
-          disabled={page >= totalPages - 1}
-          onClick={() => onPageChange(page + 1)}
-          className="rounded border border-gray-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Siguiente
-        </button>
-      </div>
+    <div
+      className="grid min-w-[720px] grid-cols-[120px_minmax(280px,1fr)_120px_160px] items-center border-b px-2 text-sm transition-colors hover:bg-gray-50"
+      onMouseEnter={() => onPrefetch(stock.symbol)}
+    >
+      <Link
+        to={`/stock/${stock.symbol}`}
+        className="text-blue-600 hover:underline"
+      >
+        {stock.symbol}
+      </Link>
+      <span>{stock.name}</span>
+      <span>{stock.currency}</span>
+      <span>{stock.type}</span>
     </div>
   );
-};
+});
 
 const StockTable: React.FC = () => {
   const queryClient = useQueryClient();
+  const parentRef = React.useRef<HTMLDivElement>(null);
   const [searchName, setSearchName] = React.useState<string>("");
   const [searchSymbol, setSearchSymbol] = React.useState<string>("");
-  const [page, setPage] = React.useState<number>(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(25);
+  const [visibleCount, setVisibleCount] =
+    React.useState<number>(INITIAL_VISIBLE_ROWS);
   const stockListQuery = useStockList();
   const stocks: IStock[] = stockListQuery.data ?? [];
 
@@ -94,20 +63,20 @@ const StockTable: React.FC = () => {
     });
   }, [debouncedSearchName, debouncedSearchSymbol, stocks]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredStocks.length / rowsPerPage),
+  const visibleStocks = React.useMemo(
+    () => filteredStocks.slice(0, visibleCount),
+    [filteredStocks, visibleCount],
   );
-  const currentPage = Math.min(page, totalPages - 1);
 
-  const paginatedStocks = React.useMemo(
-    () =>
-      filteredStocks.slice(
-        currentPage * rowsPerPage,
-        currentPage * rowsPerPage + rowsPerPage,
-      ),
-    [currentPage, filteredStocks, rowsPerPage],
-  );
+  const rowVirtualizer = useVirtualizer({
+    count: visibleStocks.length,
+    estimateSize: () => ROW_HEIGHT,
+    getScrollElement: () => parentRef.current,
+    overscan: 10,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+  const hasMoreRows = visibleCount < filteredStocks.length;
 
   const errorMessage =
     stockListQuery.error instanceof Error
@@ -116,37 +85,45 @@ const StockTable: React.FC = () => {
 
   function handleSearchNameChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearchName(event.target.value);
-    setPage(0);
+    resetVisibleRows();
   }
 
   function handleSearchSymbolChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
     setSearchSymbol(event.target.value);
-    setPage(0);
+    resetVisibleRows();
   }
 
-  function handleChangePage(newPage: number) {
-    setPage(newPage);
-  }
-
-  function handleChangeRowsPerPage(newRowsPerPage: number) {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-  }
-
-  function handlePrefetchStockData(symbol: string) {
+  const handlePrefetchStockData = React.useCallback((symbol: string) => {
     void queryClient.prefetchQuery({
       queryKey: stockQueryKeys.data(symbol),
       queryFn: ({ signal }) => getStockData(symbol, signal),
       staleTime: 60 * 60 * 1000,
     });
-  }
+    void import("./Detail");
+  }, [queryClient]);
 
   function handleRefreshStockList() {
     void queryClient.invalidateQueries({
       queryKey: stockQueryKeys.list(),
     });
+  }
+
+  function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+    const { clientHeight, scrollHeight, scrollTop } = event.currentTarget;
+    const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+
+    if (distanceToBottom < ROW_HEIGHT * 6) {
+      setVisibleCount((currentCount) =>
+        Math.min(currentCount + LOAD_MORE_ROWS, filteredStocks.length),
+      );
+    }
+  }
+
+  function resetVisibleRows() {
+    setVisibleCount(INITIAL_VISIBLE_ROWS);
+    parentRef.current?.scrollTo({ top: 0 });
   }
 
   return (
@@ -188,27 +165,54 @@ const StockTable: React.FC = () => {
               Reintentar
             </button>
           </div>
+        ) : filteredStocks.length === 0 ? (
+          <div className="p-6 text-center text-sm text-gray-500">
+            No hay acciones para los filtros aplicados.
+          </div>
         ) : (
-          <Table>
-            <TableHeader />
-            <TableBody>
-              {paginatedStocks.map((stock) => (
-                <TableRow
-                  key={stock.symbol}
-                  stock={stock}
-                  onPrefetch={() => handlePrefetchStockData(stock.symbol)}
-                />
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <div className="grid min-w-[720px] grid-cols-[120px_minmax(280px,1fr)_120px_160px] border-b bg-gray-50 px-2 py-3 text-sm font-medium">
+              <span>Símbolo</span>
+              <span>Nombre</span>
+              <span>Moneda</span>
+              <span>Tipo</span>
+            </div>
+            <div
+              ref={parentRef}
+              className="h-[560px] overflow-auto"
+              onScroll={handleScroll}
+            >
+              <div
+                className="relative min-w-[720px]"
+                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+              >
+                {virtualRows.map((virtualRow) => {
+                  const stock = visibleStocks[virtualRow.index];
+
+                  return (
+                    <div
+                      key={virtualRow.key}
+                      className="absolute top-0 left-0 w-full"
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <VirtualStockRow
+                        stock={stock}
+                        onPrefetch={handlePrefetchStockData}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="border-t px-3 py-2 text-right text-sm text-gray-500">
+              Mostrando {visibleStocks.length} de {filteredStocks.length}
+              {hasMoreRows && " acciones."}
+            </div>
+          </>
         )}
-        <TablePagination
-          count={filteredStocks.length}
-          page={currentPage}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
       </div>
     </div>
   );
