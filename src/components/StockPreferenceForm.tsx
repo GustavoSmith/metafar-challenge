@@ -10,6 +10,7 @@ import { useStockData } from "@/hooks/queries/useStockData";
 import type { IStockPreferenceFormProps } from "../types";
 import { getCurrentDay } from "../helpers";
 import { appToast } from "@/lib/toast";
+import { getUserFriendlyMessage } from "@/lib/userMessages";
 
 const DEFAULT_INTERVAL = "5min";
 
@@ -66,14 +67,8 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     setRealTime(value === "realtime");
   }
 
-  const stockErrorMessage =
-    stockError instanceof Error
-      ? stockError.message
-      : "No pudimos cargar la información de la acción.";
-  const quoteErrorMessage =
-    quoteError instanceof Error
-      ? quoteError.message
-      : "No pudimos cargar la serie de precios.";
+  const stockErrorMessage = getUserFriendlyMessage(stockError, "stockData");
+  const quoteErrorMessage = getUserFriendlyMessage(quoteError, "stockQuote");
   const realtimeStatus = isRealtimePaused
     ? "Tiempo real pausado"
     : "Tiempo real activo";

@@ -1,16 +1,16 @@
 import {
-  assertSuccessfulResponse,
   getTwelveDataApiKey,
+  parseTwelveDataResponse,
   twelveDataClient,
 } from "./client";
+import { userErrorMessages } from "@/lib/userMessages";
 import { twelveDataEndpoints } from "./endpoints";
+import { isStockListResponse, isStockSearchResponse } from "./guards";
 import {
   IStock,
   StockDataParams,
   StockListParams,
-  StockListResponse,
   StockSearchParams,
-  StockSearchResponse,
   StockSearchResult,
 } from "./types";
 
@@ -23,7 +23,7 @@ export async function getStockList(
   params: StockListParams = DEFAULT_STOCK_LIST_PARAMS,
   signal?: AbortSignal,
 ): Promise<IStock[]> {
-  const response = await twelveDataClient.get<StockListResponse>(
+  const response = await twelveDataClient.get<unknown>(
     twelveDataEndpoints.stocks,
     {
       params,
@@ -31,9 +31,13 @@ export async function getStockList(
     },
   );
 
-  assertSuccessfulResponse(response.data);
+  const stockList = parseTwelveDataResponse(
+    response.data,
+    isStockListResponse,
+    userErrorMessages.stockList,
+  );
 
-  return response.data.data;
+  return stockList.data;
 }
 
 export async function getStockData(
@@ -45,7 +49,7 @@ export async function getStockData(
     source: "docs",
   } satisfies StockDataParams;
 
-  const response = await twelveDataClient.get<StockListResponse>(
+  const response = await twelveDataClient.get<unknown>(
     twelveDataEndpoints.stocks,
     {
       params,
@@ -53,9 +57,13 @@ export async function getStockData(
     },
   );
 
-  assertSuccessfulResponse(response.data);
+  const stockList = parseTwelveDataResponse(
+    response.data,
+    isStockListResponse,
+    userErrorMessages.stockData,
+  );
 
-  return response.data.data[0] ?? null;
+  return stockList.data[0] ?? null;
 }
 
 export async function searchStocks(
@@ -68,7 +76,7 @@ export async function searchStocks(
     return [];
   }
 
-  const response = await twelveDataClient.get<StockSearchResponse>(
+  const response = await twelveDataClient.get<unknown>(
     twelveDataEndpoints.symbolSearch,
     {
       params: {
@@ -79,7 +87,11 @@ export async function searchStocks(
     },
   );
 
-  assertSuccessfulResponse(response.data);
+  const searchResponse = parseTwelveDataResponse(
+    response.data,
+    isStockSearchResponse,
+    userErrorMessages.stockSearch,
+  );
 
-  return response.data.data;
+  return searchResponse.data;
 }

@@ -4,16 +4,14 @@ import {
   ErrorBoundary,
   type FallbackProps,
 } from "react-error-boundary";
+import { userErrorMessages } from "@/lib/userMessages";
 
 interface AppErrorBoundaryProps {
   children: React.ReactNode;
 }
 
-function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : "La aplicación encontró un error inesperado.";
+function ErrorFallback({ resetErrorBoundary }: FallbackProps) {
+  const message = userErrorMessages.appCrash;
 
   return (
     <main

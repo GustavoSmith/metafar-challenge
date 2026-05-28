@@ -3,6 +3,7 @@ import StockPreferenceForm from "./StockPreferenceForm";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStockQuote } from "@/hooks/queries/useStockQuote";
 import { appToast } from "@/lib/toast";
+import { getUserFriendlyMessage } from "@/lib/userMessages";
 import type { StockPreferenceFormValues } from "../types";
 
 const Chart = React.lazy(() => import("./StockChart"));
@@ -43,10 +44,7 @@ const Detail: React.FC = () => {
       appToast.error({
         id: `quote-error-${selectedSymbol}`,
         title: "No pudimos actualizar el gráfico",
-        description:
-          quoteError instanceof Error
-            ? quoteError.message
-            : "Revisá los parámetros y volvé a intentar.",
+        description: getUserFriendlyMessage(quoteError, "stockQuote"),
       });
     }
   }, [isQuoteError, quoteError, selectedSymbol]);

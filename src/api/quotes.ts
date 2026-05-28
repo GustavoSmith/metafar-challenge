@@ -1,16 +1,18 @@
 import {
-  assertSuccessfulResponse,
   getTwelveDataApiKey,
+  parseTwelveDataResponse,
   twelveDataClient,
 } from "./client";
+import { userErrorMessages } from "@/lib/userMessages";
 import { twelveDataEndpoints } from "./endpoints";
+import { isStockData } from "./guards";
 import { IStockData, StockQuoteParams } from "./types";
 
 export async function getStockQuote(
   { symbol, interval, startDate, endDate }: StockQuoteParams,
   signal?: AbortSignal,
-) {
-  const response = await twelveDataClient.get<IStockData>(
+): Promise<IStockData> {
+  const response = await twelveDataClient.get<unknown>(
     twelveDataEndpoints.timeSeries,
     {
       params: {
@@ -25,7 +27,9 @@ export async function getStockQuote(
     },
   );
 
-  assertSuccessfulResponse(response.data);
-
-  return response.data;
+  return parseTwelveDataResponse(
+    response.data,
+    isStockData,
+    userErrorMessages.stockQuote,
+  );
 }

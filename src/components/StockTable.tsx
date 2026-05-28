@@ -10,6 +10,7 @@ import { stockQueryKeys } from "@/hooks/queries/queryKeys";
 import { useStockList } from "@/hooks/queries/useStockList";
 import useDebounce from "../hooks/useDebounce";
 import { appToast } from "@/lib/toast";
+import { getUserFriendlyMessage } from "@/lib/userMessages";
 
 const INITIAL_VISIBLE_ROWS = 100;
 const LOAD_MORE_ROWS = 100;
@@ -97,10 +98,10 @@ const StockTable: React.FC = () => {
   const virtualRows = rowVirtualizer.getVirtualItems();
   const hasMoreRows = visibleCount < filteredStocks.length;
 
-  const errorMessage =
-    stockListQuery.error instanceof Error
-      ? stockListQuery.error.message
-      : "No pudimos cargar la lista de acciones.";
+  const errorMessage = getUserFriendlyMessage(
+    stockListQuery.error,
+    "stockList",
+  );
 
   React.useEffect(() => {
     if (stockListQuery.isError) {

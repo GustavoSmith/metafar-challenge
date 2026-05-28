@@ -4,6 +4,8 @@ export interface TwelveDataErrorResponse {
   status: "error";
 }
 
+export type TwelveDataSuccessStatus = "ok";
+
 export interface IStock {
   symbol: string;
   name: string;
@@ -26,7 +28,7 @@ export interface StockDataParams {
 
 export interface StockListResponse {
   data: IStock[];
-  status: string;
+  status: TwelveDataSuccessStatus;
 }
 
 export interface StockSearchParams {
@@ -46,7 +48,7 @@ export interface StockSearchResult {
 
 export interface StockSearchResponse {
   data: StockSearchResult[];
-  status: string;
+  status: TwelveDataSuccessStatus;
 }
 
 export interface IMetaStockData {
@@ -71,7 +73,7 @@ export interface IValuesStockData {
 export interface IStockData {
   meta: IMetaStockData;
   values: IValuesStockData[];
-  status: string;
+  status: TwelveDataSuccessStatus;
 }
 
 export interface StockQuoteParams {
