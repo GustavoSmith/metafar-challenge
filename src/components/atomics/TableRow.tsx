@@ -1,6 +1,6 @@
 import React from "react";
-import { TableRow, TableCell } from "@mui/material";
 import { Link } from "react-router-dom";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { IStock } from "../../types";
 
 interface IStockTableRowProps {
@@ -8,9 +8,14 @@ interface IStockTableRowProps {
 }
 
 const StockTableRow: React.FC<IStockTableRowProps> = ({ stock }) => (
-  <TableRow key={stock.symbol}>
+  <TableRow>
     <TableCell>
-      <Link to={`/stock/${stock.symbol}`}>{stock.symbol}</Link>
+      <Link
+        to={`/stock/${stock.symbol}`}
+        className="text-blue-600 hover:underline"
+      >
+        {stock.symbol}
+      </Link>
     </TableCell>
     <TableCell>{stock.name}</TableCell>
     <TableCell>{stock.currency}</TableCell>

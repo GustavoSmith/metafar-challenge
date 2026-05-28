@@ -1,4 +1,5 @@
 import React from "react";
+import { RadioGroup } from "@base-ui/react/radio-group";
 import { getStockData, getStockQuote } from "../api";
 import {
   RadioButton,
@@ -49,8 +50,8 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     }
   }
 
-  function handleIntervalChange(event: React.ChangeEvent<HTMLSelectElement>) {
-    setInterval(event.target.value);
+  function handleIntervalChange(value: string) {
+    setInterval(value);
   }
 
   function handleStartDateChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -61,148 +62,63 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
     setEndDate(event.target.value);
   }
 
-  function handleCheckboxChange(event: React.ChangeEvent<HTMLInputElement>) {
-    // If the user selects "realtime", set the start and end date to the current day
-    if (event.target.value === "realtime") {
+  function handleDataOptionChange(value: string) {
+    if (value === "realtime") {
       const date = getCurrentDay();
       setStartDate(date);
       setEndDate(date);
     }
-    setRealTime(event.target.value === "realtime");
+    setRealTime(value === "realtime");
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        borderBottom: "1px solid #ccc",
-        padding: "10px",
-        marginBottom: "20px",
-      }}
+      className="mb-5 flex flex-col border-b border-gray-300 p-2.5"
     >
-      <div style={styles.headerContainer}>
-        <div style={styles.headerTitle}>
+      <div className="flex justify-between">
+        <div className="mb-2.5 text-2xl">
           {symbol} - {detailStock?.name} - {detailStock?.currency}
         </div>
-        <div
-          style={{
-            marginTop: "10px",
-            fontSize: "18px",
-            textAlign: "right",
-          }}
-        >
-          Usuario: Juan
-        </div>
+        <div className="mt-2.5 text-right text-lg">Usuario: Juan</div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={styles.radioContainer}>
-          <RadioButton
-            name="dataOption"
-            value="realtime"
-            checked={realTime}
-            onChange={handleCheckboxChange}
-            label="Tiempo Real"
-          />
-          <span style={styles.description}>
-            (utiliza la fecha actual, al graficar esta opción, se debe
-            actualizar el gráfico en forma automática según el intervalo
-            seleccionado)
-          </span>
-        </div>
-        <div style={styles.radioContainer}>
-          <RadioButton
-            name="dataOption"
-            value="history"
-            checked={!realTime}
-            onChange={handleCheckboxChange}
-            label="Histórico"
-          />
-          <div style={styles.dateInputContainer}>
-            <DateInput
-              disabled={realTime}
-              value={startDate}
-              onChange={handleStartDateChange}
-              style={styles.dateInput}
-            />
-            <DateInput
-              disabled={realTime}
-              value={endDate}
-              onChange={handleEndDateChange}
-              style={styles.dateInput}
-            />
+      <div className="flex flex-col">
+        <RadioGroup
+          value={realTime ? "realtime" : "history"}
+          onValueChange={handleDataOptionChange}
+          className="flex flex-col"
+        >
+          <div className="mb-2.5 flex items-center">
+            <RadioButton value="realtime" label="Tiempo Real" />
+            <span className="ml-1 text-xs text-gray-600">
+              (utiliza la fecha actual, al graficar esta opción, se debe
+              actualizar el gráfico en forma automática según el intervalo
+              seleccionado)
+            </span>
           </div>
-        </div>
-        <IntervalSelect
-          value={interval}
-          onChange={handleIntervalChange}
-          style={styles.intervalSelect}
-        />
-        <Button variant="contained" type="submit" style={styles.button}>
+          <div className="mb-2.5 flex items-center">
+            <RadioButton value="history" label="Histórico" />
+            <div className="mx-1">
+              <DateInput
+                disabled={realTime}
+                value={startDate}
+                onChange={handleStartDateChange}
+              />
+              <DateInput
+                disabled={realTime}
+                value={endDate}
+                onChange={handleEndDateChange}
+              />
+            </div>
+          </div>
+        </RadioGroup>
+        <IntervalSelect value={interval} onChange={handleIntervalChange} />
+        <Button variant="contained" type="submit" className="self-start">
           Graficar
         </Button>
       </div>
     </form>
   );
-};
-
-const styles = {
-  form: {},
-  headerContainer: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  headerTitle: {
-    fontSize: "24px",
-    marginBottom: "10px",
-  },
-  headerOptions: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  label: {
-    marginRight: "20px",
-    marginBottom: "10px",
-  },
-  description: {
-    fontSize: "12px",
-    color: "#666",
-    marginLeft: "5px",
-  },
-  radioContainer: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: "10px",
-  },
-  dateInputContainer: {
-    margin: "0px 5px",
-  },
-  dateInput: {
-    padding: "5px",
-    fontSize: "14px",
-    margin: "10px 0px",
-  },
-  intervalSelect: {
-    padding: "5px",
-    fontSize: "17px",
-    marginBottom: "10px",
-  },
-  button: {
-    padding: "5px 10px",
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-  headerUser: {
-    marginTop: "10px",
-    fontSize: "18px",
-    textAlign: "right",
-  },
 };
 
 export default StockPreferenceForm;

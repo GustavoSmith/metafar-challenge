@@ -1,15 +1,19 @@
 import * as React from "react";
-import { TableHead, TableRow, TableCell } from "@mui/material";
+import {
+  TableHeader as UiTableHeader,
+  TableRow,
+  TableHead,
+} from "@/components/ui/table";
 
 const StockTableHeader: React.FC = () => (
-  <TableHead>
+  <UiTableHeader>
     <TableRow>
-      <TableCell>Símbolo</TableCell>
-      <TableCell>Nombre</TableCell>
-      <TableCell>Moneda</TableCell>
-      <TableCell>Tipo</TableCell>
+      <TableHead>Símbolo</TableHead>
+      <TableHead>Nombre</TableHead>
+      <TableHead>Moneda</TableHead>
+      <TableHead>Tipo</TableHead>
     </TableRow>
-  </TableHead>
+  </UiTableHeader>
 );
 
 export default StockTableHeader;

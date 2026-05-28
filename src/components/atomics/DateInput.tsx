@@ -1,30 +1,24 @@
 import * as React from "react";
+import { Input } from "@base-ui/react/input";
 import { IDateInputProps } from "../../types";
+import { cn } from "@/lib/utils";
 
 const DateInput: React.FC<IDateInputProps> = ({
   disabled,
   value,
   onChange,
+  className,
 }) => (
-  <input
+  <Input
     type="datetime-local"
     disabled={disabled}
     value={value}
     onChange={onChange}
-    style={styles.dateInput}
+    className={cn(
+      "my-2.5 rounded border border-gray-300 px-1.5 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50",
+      className,
+    )}
   />
 );
-
-const styles = {
-  datePickers: {
-    display: "flex",
-    gap: "10px",
-    marginTop: "10px",
-  },
-  dateInput: {
-    padding: "5px",
-    fontSize: "14px",
-  },
-};
 
 export default DateInput;

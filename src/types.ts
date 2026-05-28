@@ -35,10 +35,7 @@ interface IOption {
 }
 
 export interface IRadioButtonProps {
-  name: string;
   value: string;
-  checked: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
 }
 
@@ -46,26 +43,28 @@ export interface IDateInputProps {
   disabled: boolean;
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  style?: React.CSSProperties;
+  className?: string;
 }
 
 export interface ISelectInputProps {
+  label?: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  onChange: (value: string) => void;
   options: IOption[];
+  className?: string;
 }
 
 export interface IButtonProps {
   type: "submit" | "button" | "reset";
   variant: "contained" | "outlined" | "text";
   children: React.ReactNode;
-  style?: React.CSSProperties;
+  className?: string;
 }
 
 export interface IntervalSelectProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  style?: React.CSSProperties;
+  onChange: (value: string) => void;
+  className?: string;
 }
 
 export interface IStockPreferenceFormProps {
