@@ -22,14 +22,22 @@ interface IChartProps {
   stockData: IStockData;
 }
 
+function getChronologicalStockValues(values: IValuesStockData[]) {
+  return [...values].sort((currentValue, nextValue) =>
+    currentValue.datetime.localeCompare(nextValue.datetime),
+  );
+}
+
 function sampleStockValues(values: IValuesStockData[]) {
-  if (values.length <= MAX_CHART_POINTS) {
-    return values;
+  const chronologicalValues = getChronologicalStockValues(values);
+
+  if (chronologicalValues.length <= MAX_CHART_POINTS) {
+    return chronologicalValues;
   }
 
-  const step = Math.ceil(values.length / MAX_CHART_POINTS);
+  const step = Math.ceil(chronologicalValues.length / MAX_CHART_POINTS);
 
-  return values.filter((_, index) => index % step === 0);
+  return chronologicalValues.filter((_, index) => index % step === 0);
 }
 
 const ChartScreenComponent: React.FC<IChartProps> = ({ stockData }) => {

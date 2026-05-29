@@ -104,6 +104,7 @@ const StockPreferenceForm: React.FC<IStockPreferenceFormProps> = ({
           </p>
         </div>
         <div className="bg-surface-muted text-muted-foreground self-start rounded-2xl px-4 py-2 text-sm font-medium">
+          {/* TODO: Agregar el nombre del usuario real */}
           Usuario: Juan
         </div>
       </div>
